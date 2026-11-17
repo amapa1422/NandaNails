@@ -29,4 +29,5 @@
 - Correção durante os testes: a primeira execução do teste novo detectou horários retornando fora de ordem pela consulta existente. A nova migration ordena os resultados; a rodada final passou. Essa falha inicial não foi registrada como aprovação.
 - Limitações: browser com backend simulado; Supabase/Auth/WhatsApp reais e Safari físico não testados nesta atualização. Não houve alteração de credenciais, banco remoto, layout, fotos, serviços, preços, formulário, painel ou login.
 - Ponto anterior: `backup-nandanails-antes-horarios` → `4d81ead2b8572d4de023f332986ad847ad4199d2`.
-- Identificação da versão atual: tag local `nandanails-horarios-2026-11-17`; resolver o commit com `git rev-parse nandanails-horarios-2026-11-17`.
+- Commit da implementação: `89a6eaaa89458d5e9af42a62c7585b1f8e07fb2b`.
+- Identificação da versão atual: tag local `nandanails-horarios-2026-11-17`, que inclui este registro final; resolver o commit com `git rev-parse nandanails-horarios-2026-11-17`.
