@@ -19,6 +19,7 @@
 - Limitações: apenas bancos locais descartáveis em `127.0.0.1:55432`, com shim de Auth. Não executamos navegador nesta etapa nem Deno/Edge Functions reais, Auth Supabase, chamadas ao projeto remoto ou envio real de WhatsApp. Os testes antigos de navegador usam mocks e não comprovam operação online.
 - Entrega operacional: roteiro do SQL Editor, mapeamento das tabelas, segurança, autorização administrativa por UID e próximos passos para `booking`, CORS e captcha em `docs/SUPABASE_PRIMEIRA_ENTREGA.md`. Nenhum usuário administrativo é criado pelo SQL inicial. WhatsApp continua pendente e sem ativação.
 - Sem publicação, `git push`, alterações em credenciais ou dados reais. A primeira operação remota aguarda autorização expressa do usuário.
+- Commit da preparação: `f030f570ae1c8ef5fbd24d0bda491a06ad5e8fc9`. Tag local da entrega documentada: `nandanails-supabase-preparado-2026-11-17` (preparação, não ativação).
 
 ## 17/11/2026 — ponto de recuperação anterior aos horários
 

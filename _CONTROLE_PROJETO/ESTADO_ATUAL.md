@@ -70,6 +70,8 @@ Versão atual validada localmente: `nandanails-horarios-2026-11-17` (tag local; 
 
 Recuperação anterior à preparação Supabase: tag `backup-nandanails-antes-supabase-real`, commit `a6360e1810a0c715d482bcf93c86706b285401d2`. Continua sendo a referência estável anterior; a preparação nova não significa ativação online.
 
+Preparação Supabase documentada: `nandanails-supabase-preparado-2026-11-17`; commit principal `f030f570ae1c8ef5fbd24d0bda491a06ad5e8fc9`. A tag inclui o registro final da documentação, sem operações remotas.
+
 A configuração padrão antiga era 09–18h nos dias úteis e 09–14h no sábado. A migration inicial é histórica e deve permanecer intacta; novas instalações precisam aplicar todas as migrations em ordem. Configurações personalizadas não podem ser substituídas automaticamente.
 
 Limitações herdadas: sem validação em Safari/iPhone físico, leitor de tela, Lighthouse móvel ou backend remoto; testes Chromium usam mocks. `docs/ENTREGA.md` relata a primeira entrega e não substitui este estado atual. Campos de configuração de horário no catálogo são referência; a disponibilidade real vem do servidor.
