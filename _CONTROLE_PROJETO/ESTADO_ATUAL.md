@@ -79,6 +79,8 @@ Recuperação anterior à preparação Supabase: tag `backup-nandanails-antes-su
 
 Preparação Supabase documentada: `nandanails-supabase-preparado-2026-11-17`; commit principal `f030f570ae1c8ef5fbd24d0bda491a06ad5e8fc9`. A tag inclui o registro final da documentação, sem operações remotas.
 
+Revisão final preparada: `nandanails-migrations-revisadas-2026-11-17`, commit principal `675c3da75fea36bdf68eb3eac0186aad1a19a909`. A tag inclui o registro final. Recuperação anterior: `backup-nandanails-antes-revisao-migrations` → `c19799aa6dda48e73983ed31728d843b770a88bd`. Nenhuma dessas referências significa versão aplicada no Supabase.
+
 A configuração padrão antiga era 09–18h nos dias úteis e 09–14h no sábado. A migration inicial foi revisada nesta entrega a pedido expresso do usuário, antes da primeira aplicação. Após aplicação em qualquer ambiente, não editar seu histórico: criar nova migration. Novas instalações usam os arquivos atuais em ordem `001 → 002 → 003`, ou o consolidado atual, nunca ambos. Configurações personalizadas não podem ser substituídas automaticamente.
 
 Limitações herdadas: sem validação em Safari/iPhone físico, leitor de tela, Lighthouse móvel ou backend remoto; testes Chromium usam mocks. `docs/ENTREGA.md` relata a primeira entrega e não substitui este estado atual. Campos de configuração de horário no catálogo são referência; a disponibilidade real vem do servidor.

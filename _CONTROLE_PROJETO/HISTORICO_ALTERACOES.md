@@ -24,6 +24,7 @@
   - Verificação local Python/Git: aprovados links da documentação, tag de recuperação, `git diff --check`, ausência de variável de credencial backend nos módulos frontend e ausência de alterações em HTML/CSS, imagens, animações, catálogo e migration `003`.
 - Limitações: testes de handler com RPC/Siteverify simulados e PostgreSQL local com shim Auth; sem Deno hospedado, Supabase/Auth/Cloudflare reais, carga/DoS, Safari físico, comunicação WhatsApp ou persistência entre dispositivos pela internet. Cotas globais são compartilhadas pelo estúdio, não são proteção WAF anterior à função nem verificam posse de telefone. Não há garantia contra toda automação com desafio válido.
 - Entrega: SQLs revisados para execução posterior autorizada na ordem `001 → 002 → 003`, ou consolidado alternativo, nunca ambos. Backend antigo não é compatível com a assinatura revisada. Nenhum acesso remoto, publicação, alteração de dados reais ou `git push`.
+- Commit principal da revisão: `675c3da75fea36bdf68eb3eac0186aad1a19a909`. Tag local da versão documentada: `nandanails-migrations-revisadas-2026-11-17` (inclui o registro final, sem aplicação remota).
 
 ## 17/11/2026 — primeira entrega Supabase: auditoria e preparação local
 
