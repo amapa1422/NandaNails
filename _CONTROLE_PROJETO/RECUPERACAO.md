@@ -1,5 +1,14 @@
 # Recuperação segura com Git
 
+## Ponto anterior à revisão final das migrations
+
+- Tag: `backup-nandanails-antes-revisao-migrations`.
+- Commit: `c19799aa6dda48e73983ed31728d843b770a88bd`.
+- Árvore conferida limpa antes das mudanças; tag inédita, sem sobrescrever referências.
+- Consulta: `git show --stat backup-nandanails-antes-revisao-migrations`.
+- Recuperação, após preservar trabalho pendente: `git switch -c recuperacao-nandanails-pre-revisao backup-nandanails-antes-revisao-migrations` (escolha nome novo se já existir).
+- A revisão atual alterou assinatura de `agenda_book` e handler: recupere uma versão coerente de backend, SQL e lógica do captcha. Não misture a Edge Function antiga com as migrations revisadas. Nada foi aplicado remotamente. Se algum SQL for aplicado no futuro, retornar o Git não desfaz o banco; criar migration compensatória autorizada em vez de reaplicar schema antigo.
+
 ## Ponto anterior à preparação Supabase
 
 - Tag: `backup-nandanails-antes-supabase-real`.

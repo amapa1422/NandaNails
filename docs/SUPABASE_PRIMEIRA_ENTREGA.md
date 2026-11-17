@@ -2,6 +2,8 @@
 
 Data: 17/11/2026. Escopo concluído: auditoria local, preparação do SQL e roteiro de ativação. **Nenhuma conexão, consulta, migration, alteração de usuário ou mensagem foi executada no projeto remoto.** A primeira operação no Supabase aguarda autorização expressa.
 
+Revisão posterior solicitada pelo usuário: consulte `REVISAO_MIGRATIONS.md`. Como os SQLs ainda não foram aplicados, as versões `001`/`002` receberam correções de segurança antes da primeira implantação. Use os arquivos atuais e a Edge Function atualizada.
+
 ## Projeto de destino
 
 - Nome informado pelo usuário: `nandanails-agendamento`.
@@ -39,7 +41,7 @@ Ele contém o SQL completo, sem placeholders de código nem dependências de `\i
 2. `202611170002_horarios_padrao.sql`: disponibilidade atual e validação de inícios permitidos nas consultas/reservas/remarcações.
 3. **Nova** `202611170003_servicos_iniciais.sql`: inserção repetível dos cinco serviços com `ON CONFLICT(id) DO NOTHING`, preservando dados já cadastrados, preços personalizados e serviços inativos.
 
-As duas migrations anteriores não foram editadas. O consolidado é gerado por `node scripts/prepare-supabase.mjs` e inclui os hashes SHA-256 das fontes. Não é uma migration adicional para executar depois delas; é uma **alternativa de instalação inicial pelo SQL Editor**. Escolha o consolidado **ou** a sequência de migrations, nunca ambos no mesmo banco.
+As migrations `001`/`002` foram revisadas antes da primeira aplicação, com autorização expressa do usuário para corrigir os arquivos locais. A `003` foi validada sem alterar os cinco serviços ou valores. O consolidado é gerado por `node scripts/prepare-supabase.mjs` e inclui os hashes SHA-256 das fontes. Não é uma migration adicional para executar depois delas; é uma **alternativa de instalação inicial pelo SQL Editor**. Escolha o consolidado **ou** a sequência de migrations, nunca ambos no mesmo banco.
 
 A instalação completa é deliberadamente de execução única: se detectar tabelas NandaNails existentes, aborta antes de modificá-las. Não tenta transformar uma estrutura desconhecida em estrutura compatível por meio de `IF NOT EXISTS`. O seed `003` é idempotente e pode ser repetido após revisão; a instalação inteira não deve ser reaplicada. Em banco parcial ou existente, revisar os objetos e executar somente migrations pendentes, com autorização.
 
@@ -76,7 +78,7 @@ A migration `002` reconhece o padrão original e preserva horários personalizad
 - Leitura administrativa exige JWT válido de Supabase Auth e UID presente em `admin_users`. A função `is_admin()` lê essa tabela no servidor; não usa metadados editáveis do usuário. Não há autopromoção por API.
 - Escritas são feitas por funções com grants explícitos. `admin_action` exige autorização no banco em cada operação. Criar reserva e consultar disponibilidade pelo caminho público usa a Edge Function; as RPCs correspondentes não são concedidas a `anon`.
 - Funções `security definer` usam `search_path=''` e nomes qualificados. O uso privilegiado existe para retornar dados mínimos e executar transações; não concede acesso público às tabelas.
-- Criação pública de reservas exige Turnstile verificado no backend, hostname permitido, hash de IP com salt e limites por IP/telefone. Rejeições e conflitos não viram confirmações.
+- Criação pública de reservas exige Turnstile verificado no backend com hostname, ação `booking` e validade temporal. Limites globais fixos e por telefone (HMAC derivado no servidor) são contados em RPC independente e persistem diante de falhas. Cabeçalhos de IP e chaves escolhidas pela cliente não definem cotas; `p_rate_key` foi removido de `agenda_book`. As duas funções são restritas a `service_role`. Veja limites e riscos residuais na revisão final.
 - `verify_jwt=false` na função pública é intencional para permitir visitantes e Publishable keys; não significa acesso administrativo liberado. Auth do painel continua independente, com JWT e autorização no banco. `notify` exige secret próprio e não será ativada agora.
 - Não inserir Secret key, `service_role`, senhas ou tokens WhatsApp no frontend ou no SQL desta instalação.
 
@@ -89,7 +91,7 @@ Referências oficiais: [grants e funções Supabase](https://supabase.com/docs/g
 3. Se as duas consultas retornarem zero objetos da agenda, o projeto é candidato à instalação inicial. Se houver qualquer objeto, **pare e revise**; não execute o consolidado nem remova tabelas para torná-lo aplicável. Mesmo zero resultados não autoriza instalação em projeto diferente.
 4. Na mesma instância/projeto, crie uma nova query e copie **todo** `supabase/sql-editor/001_instalacao_nandanails.sql`, incluindo `begin;` e `commit;`. Revise e execute uma única vez. Não selecione apenas um trecho.
 5. Se ocorrer erro, não continue executando pedaços nem remova constraints ou RLS. A transação deve ser revertida; confira o estado. Se a sessão ficar com transação abortada, execute `rollback;` para encerrá-la e traga o erro para revisão.
-6. Após sucesso, execute `supabase/sql-editor/002_conferir_instalacao.sql`. Esperado: cinco serviços com 9000/7000/6000/6500/1500 centavos; duração 120/60/60/90/30 min; turnos úteis 15–18h, sábado 08–16h e sem domingo; regras úteis `[15h,16h]`; atualização `202611170002` com `applied=true`; oito tabelas com RLS; catálogo com `today` do servidor; os quatro indicadores de privilégio anônimo retornam `false`.
+6. Após sucesso, execute `supabase/sql-editor/002_conferir_instalacao.sql`. Esperado: cinco serviços com 9000/7000/6000/6500/1500 centavos; duração 120/60/60/90/30 min; turnos úteis 15–18h, sábado 08–16h e sem domingo; regras úteis `[15h,16h]`; atualização `202611170002` com `applied=true`; oito tabelas com RLS; catálogo com `today` do servidor; todos os indicadores de privilégio indevido retornam `false`.
 7. Nenhuma cliente, reserva ou administradora deve ser criada pela instalação. Não use `tests/bootstrap.sql`: é um shim exclusivo dos testes locais, não um script Supabase.
 
 O SQL Editor não atualiza automaticamente o histórico usado pela CLI Supabase. Registre que foram aplicadas as versões `202611170001`, `202611170002` e `202611170003` pelo consolidado. Antes de uma futura utilização de `supabase db push`, faça uma revisão do schema e do histórico. Um eventual `supabase migration repair` deve ser autorizado e só marcar versões **efetivamente aplicadas**; não substitui a execução do SQL. Não há reparo automático nesta entrega. [Documentação oficial de migrations](https://supabase.com/docs/guides/deployment/database-migrations).

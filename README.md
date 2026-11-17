@@ -4,6 +4,8 @@ Evolução do HTML original, mantendo logo, fotografias, tema dark, vinho, rosa,
 
 Projeto Supabase de destino informado: `nandanails-agendamento` / `fdxocuhgiypynsjxsqtm`. A URL pública está em `js/config.js`; a Publishable key será preenchida localmente pelo usuário. **A primeira operação remota ainda aguarda autorização.** Para esta etapa, siga a [primeira entrega Supabase](docs/SUPABASE_PRIMEIRA_ENTREGA.md), que inclui diagnóstico, SQL completo e aplicação pelo SQL Editor.
 
+Antes de aplicar, leia a [revisão final de segurança e ordem de execução](docs/REVISAO_MIGRATIONS.md). As migrations `001`/`002` foram revisadas por solicitação do usuário, que confirmou que nenhuma havia sido aplicada remotamente. O código da Edge Function deve acompanhar esta versão do SQL.
+
 ## Executar localmente
 
 Requer Python 3 e, para verificações, Node 22 ou superior. Não há dependências de build.
@@ -46,12 +48,13 @@ O ambiente Supabase fornece `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` às fun
 - Disponibilidade padrão atual: segunda a sexta somente inícios às **15h e 16h**; sábado das **08h às 16h**, com término obrigatório até 16h; domingo fechado. Nos dias úteis, o limite técnico herdado de 18h permite que o serviço de 120 minutos iniciado às 16h termine às 18h, sem liberar novos inícios.
 - Sábado mantém a grade existente de 30 minutos a partir da abertura, filtrada pela duração. Antecedência mínima de 30 minutos e horizonte de 90 dias continuam validados no servidor.
 - A migration `202611170002_horarios_padrao.sql` é idempotente e preserva reservas. Atualiza apenas os seis turnos que correspondem integralmente ao padrão original e não têm edição administrativa de horários registrada. Qualquer divergência é preservada; o resultado fica em `private.schedule_default_updates` (`applied` e `reason`). Configurações manuais indistinguíveis do seed e sem auditoria não podem ter sua origem comprovada além desse fingerprint; revise o estado real antes da aplicação.
-- Nos bancos atualizados do padrão, `private.allowed_weekday_starts` mantém as restrições de início inclusive após salvar turnos pelo painel. Alterar turnos continua limitando o término; liberar outros inícios exigiria alterar essa política explicitamente, com autorização. Configurações personalizadas ignoradas pela migration não recebem essa restrição.
+- Nos bancos atualizados do padrão, `private.allowed_weekday_starts` mantém as restrições de início inclusive após salvar turnos pelo painel. A geração dos inícios explícitos não depende da grade da abertura: um turno 15h15–18h permite 16h para 120 minutos. Cada turno ativo em dia restrito deve conter ao menos 15h ou 16h; turnos incompatíveis ou dados incompletos são rejeitados sem apagar os anteriores. Liberar outros inícios exigiria alterar a política com autorização. Configurações personalizadas ignoradas pela migration não recebem essa restrição.
 - Vários turnos por dia representam pausas. Nenhum turno representa folga semanal; bloqueios representam folgas específicas ou intervalos extraordinários. Reservas existentes são mantidas se o funcionamento mudar; cabe à administradora remarcar quando necessário.
 - Preço, duração, nome do serviço e nome da cliente são copiados para a reserva. Alterar o catálogo não modifica o contrato anterior. Remarcação preserva os valores e a duração da reserva.
 - Exclusão GiST de intervalos `[início,fim)` garante que reservas ativas não se sobreponham. Um lock transacional comum serializa reservas, bloqueios e alterações administrativas, incluindo verificações entre tabelas. Horários adjacentes são permitidos.
 - A confirmação aparece somente após resposta com ID persistido. Um UUID de requisição permite repetir uma tentativa de rede sem duplicar a reserva. Em caso de timeout, mantenha os mesmos dados e tente de novo após renovar o captcha; a resposta devolve a mesma reserva.
-- Antiabuso: captcha obrigatório com hostname verificado, até 8 reservas por chave de IP/hora e 5 por telefone/dia. A chave de IP é hash com salt; não se armazena IP bruto. Confirme que o proxy da hospedagem sobrescreve `x-forwarded-for` antes de usar esse limite como defesa principal.
+- Antiabuso: a Edge Function conta tentativas em RPC independente, antes do captcha/reserva. Cotas globais: 300 consultas de catálogo/minuto, 300 de disponibilidade/minuto e 60 tentativas de reserva/hora. Após captcha válido, aplica até 5 tentativas/telefone/hora usando HMAC calculado no backend com secret de no mínimo 32 caracteres. O banco mantém também o limite de 5 reservas/telefone/dia. Falhas e conflitos não desfazem os contadores. Não usamos cabeçalhos de IP, request ID ou chaves enviadas pela cliente para escolher limites. `agenda_book` não recebe mais `p_rate_key`; a função de cotas é exclusiva de `service_role`. Turnstile exige hostname, ação `booking`, timestamp recente e sucesso do provedor.
+- As cotas globais são compartilhadas pelo estúdio: podem causar indisponibilidade temporária sob abuso. Não substituem proteção WAF/gateway anterior à execução da função nem verificam a posse do número de telefone. Não há garantia de bloqueio de toda automação que resolva desafios válidos.
 - `clients`, reservas, bloqueios, auditoria e fila possuem RLS; visitantes não têm acesso direto. Usuária autenticada sem autorização não consegue ler dados nem administrar. Escritas ocorrem por funções com grants explícitos e `search_path` vazio.
 
 ## WhatsApp oficial
@@ -83,6 +86,7 @@ npm.cmd test
 python tests/database.py
 python tests/schedule.py
 python tests/installation.py
+python tests/security.py
 node tests/browser.mjs
 ```
 

@@ -1,5 +1,30 @@
 # Histórico de alterações
 
+## 17/11/2026 — revisão final de segurança e compatibilidade das migrations
+
+- Escopo autorizado: revisar `001`/`002`/`003`, backend e regras de expediente antes de qualquer aplicação remota. O usuário confirmou que ainda não executou os SQLs; essa autorização específica permite corrigir diretamente os arquivos locais históricos nesta ocasião.
+- Recuperação: árvore limpa em `c19799aa6dda48e73983ed31728d843b770a88bd`; tag inédita `backup-nandanails-antes-revisao-migrations` criada sem sobrescrever versões.
+- Correções `001`: removido `p_rate_key` da assinatura de `agenda_book`; novo `agenda_rate_limit` exclusivo do backend, com escopos globais fixos e escopo de telefone HMAC; contadores retornam booleano e são confirmados em RPC separada antes da reserva. Novo claim atômico do digest do captcha para impedir replay concorrente. Revogações incluem `PUBLIC`, sequência de auditoria e tabelas privadas; seed inicial usa `ON CONFLICT DO NOTHING`; dados `hours` incompletos são recusados.
+- Correções `002`: candidatos úteis vêm diretamente de `allowed_weekday_starts`, independentes da grade da abertura. Consultas e remarcação aceitam 16h num turno 15h15–18h. Turnos incompatíveis com todos os inícios permitidos e payloads inválidos são recusados sem perder o expediente anterior. Fechamento explícito com lista vazia continua disponível.
+- `003`: revisada e preservada sem mudanças; mantém os cinco serviços/valores e seed idempotente sem sobrescrever personalizações.
+- Backend: novo `_shared/booking-handler.mjs` executável com dependências simuladas; entrada `booking/index.ts` mantém credencial somente no servidor. Sem confiança em IP/cabeçalhos/UUID escolhidos pela cliente. Reject de campos desconhecidos, corpo limitado durante leitura, datas válidas, CORS explícito, captcha com hostname/ação/timestamp, claim único e cota por telefone. Falhas retornam erro sem sucesso falso ou detalhes internos.
+- Frontend: somente `js/api.js` (ação lógica `booking` no widget captcha) e `js/admin.js` (mensagens claras para horários incompatíveis) mudaram. Nenhum HTML, CSS, logo, fotografia, serviço/preço, animação ou layout foi modificado.
+- Documentos: `docs/REVISAO_MIGRATIONS.md`, README, roteiro anterior, `AGENTS.md` e todos os documentos de controle atualizados. Consolidado SQL regenerado com hashes das migrations; consultas de verificação atualizadas. `.env.example` explica salt mínimo de 32 caracteres, sem inserir credencial real.
+- Arquivos de testes: criados `tests/booking-handler.test.mjs` e `tests/security.py`; adaptadas assinaturas em `tests/database.py`, `tests/schedule.py`, `tests/installation.py`. O teste de instalação passou a simular grants iniciais para `PUBLIC` e comparar as novas funções.
+- Testes executados e aprovados:
+  - `node scripts/prepare-supabase.mjs`: consolidado regenerado localmente.
+  - `node scripts/check.mjs`: sintaxe JS, caminhos e IDs.
+  - `npm.cmd test`: **15 testes Node**, incluindo handler efetivo com mocks, rejeição de chaves escolhidas/cabeçalhos forjados, cotas/captcha, replay, erros sem falsa confirmação, integridade do SQL, imagens originais e WhatsApp simulado.
+  - `python -u tests/security.py`: **5 grupos**, com dados reais de teste no banco local: todas as tabelas/RLS/grants sob permissões iniciais amplas para PUBLIC, papéis autorizado/não autorizado, ausência da assinatura antiga, tentativas persistentes, expiração, concorrência de cotas/captcha, expediente 15h15, rollback de edições incompatíveis/incompletas, fechamento e FKs de administradora/cliente/serviço.
+  - `python -u tests/installation.py`: **6 grupos**, incluindo sequência/consolidado equivalentes, RLS, seed, preservação, rejeição de reinstalação e concorrência de reservas.
+  - `python -u tests/schedule.py`: **8 grupos**, incluindo os cinco serviços, início 15h/16h, sábado até 16h, domingo, conflitos, preservação e personalizações.
+  - `python -u tests/database.py`: **10 grupos** de regressão do schema e operações existentes.
+  - `node tests/browser.mjs`: aprovado em seis larguras, fluxo público/painel/galeria com backend simulado, sem erros JS nem rolagem horizontal.
+  - `node --check` nas entradas TypeScript/módulos backend e `npm.cmd run build`: aprovados; pacote estático regenerado sem publicar.
+  - Verificação local Python/Git: aprovados links da documentação, tag de recuperação, `git diff --check`, ausência de variável de credencial backend nos módulos frontend e ausência de alterações em HTML/CSS, imagens, animações, catálogo e migration `003`.
+- Limitações: testes de handler com RPC/Siteverify simulados e PostgreSQL local com shim Auth; sem Deno hospedado, Supabase/Auth/Cloudflare reais, carga/DoS, Safari físico, comunicação WhatsApp ou persistência entre dispositivos pela internet. Cotas globais são compartilhadas pelo estúdio, não são proteção WAF anterior à função nem verificam posse de telefone. Não há garantia contra toda automação com desafio válido.
+- Entrega: SQLs revisados para execução posterior autorizada na ordem `001 → 002 → 003`, ou consolidado alternativo, nunca ambos. Backend antigo não é compatível com a assinatura revisada. Nenhum acesso remoto, publicação, alteração de dados reais ou `git push`.
+
 ## 17/11/2026 — primeira entrega Supabase: auditoria e preparação local
 
 - Pedido: preparar integração com o projeto exclusivo `fdxocuhgiypynsjxsqtm`, começando pela auditoria e migrations; aguardar autorização para a primeira operação remota.

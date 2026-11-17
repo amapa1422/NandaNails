@@ -20,7 +20,7 @@ def setup(name):
     shim=Path('tests/bootstrap.sql').read_text(encoding='utf-8')
     db.sql(shim[shim.index('create schema auth;'):])
     # Model permissive initial grants: migrations must revoke them explicitly.
-    db.sql('alter default privileges in schema public grant all on tables to anon,authenticated;')
+    db.sql('alter default privileges in schema public grant all on tables to public,anon,authenticated;')
 
 def signature():
     return db.sql("""
@@ -29,7 +29,7 @@ def signature():
       'hours',(select jsonb_agg(jsonb_build_array(weekday,opens,closes,active) order by weekday) from public.availability),
       'rules',(select jsonb_agg(to_jsonb(r) order by weekday) from private.allowed_weekday_starts r),
       'functions',(select jsonb_agg(pg_get_functiondef(p.oid) order by n.nspname,p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace
-        where n.nspname in ('private','public') and p.proname in ('slots','start_allowed','is_admin','agenda_catalog','agenda_availability','agenda_book','admin_action','claim_notification','finish_notification')),
+        where n.nspname in ('private','public') and p.proname in ('slots','start_allowed','is_admin','agenda_catalog','agenda_availability','agenda_book','agenda_rate_limit','agenda_consume_challenge','admin_action','claim_notification','finish_notification')),
       'rls',(select jsonb_agg(jsonb_build_array(c.relname,c.relrowsecurity,c.relacl::text) order by c.relname) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r')
     );""")
 
@@ -50,7 +50,7 @@ db.sql('set role anon;select * from public.appointments;',False)
 db.sql("set role authenticated;select public.admin_action('list','{}');",False)
 db.sql("set role authenticated;insert into public.admin_users values(gen_random_uuid());",False)
 assert db.sql('set role authenticated;select count(*) from public.clients;')=='0'
-assert db.sql("select has_function_privilege('anon','public.agenda_book(text,date,time,text,text,uuid,text,integer,integer)','EXECUTE');")=='f'
+assert db.sql("select has_function_privilege('anon','public.agenda_book(text,date,time,text,text,uuid,integer,integer)','EXECUTE');")=='f'
 print('PASS anonymous privacy, denied self-promotion, authorization and restrictive function grants under permissive initial table grants')
 
 db.sql(initial,False)

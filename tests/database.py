@@ -24,7 +24,7 @@ def rpc(action, data, admin=True):
 def book(day, time, service='molde-f1', request=None, phone='5511912345678', name='Cliente Teste'):
     request=request or str(uuid.uuid4())
     price,duration={'molde-f1':(9000,120),'remocao':(1500,30)}[service]
-    return f"set role service_role;select public.agenda_book('{service}','{day}','{time}','{name}','{phone}','{request}','{uuid.uuid4()}',{price},{duration});"
+    return f"set role service_role;select public.agenda_book('{service}','{day}','{time}','{name}','{phone}','{request}',{price},{duration});"
 
 def check(label, fn):
     fn(); print('PASS '+label)
@@ -51,7 +51,7 @@ if __name__=='__main__':
         sql('set role anon;select * from public.clients;',False)
         assert sql('set role authenticated;select count(*) from public.clients;').splitlines()[-1]=='0'
         sql("set role anon;select public.agenda_catalog();",False)
-        sql("set role authenticated;select public.agenda_book('molde-f1',current_date,'10:00','Cliente Teste','5511912345678',gen_random_uuid(),'a',9000,120);",False)
+        sql("set role authenticated;select public.agenda_book('molde-f1',current_date,'10:00','Cliente Teste','5511912345678',gen_random_uuid(),9000,120);",False)
         sql("set role authenticated;select public.admin_action('list','{}');",False)
         sql("set role authenticated;insert into public.admin_users values(auth.uid());",False)
     check('RLS, anonymous privacy, server-only booking, admin authorization',rls)

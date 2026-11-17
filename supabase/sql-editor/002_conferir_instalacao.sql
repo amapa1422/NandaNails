@@ -10,7 +10,12 @@ select c.relname as table_name,c.relrowsecurity as rls_enabled
  ('services','clients','appointments','availability','schedule_blocks','admin_users','audit_log','notification_outbox')
  order by c.relname;
 select public.agenda_catalog() as catalogo_e_data_do_servidor;
-select has_function_privilege('anon','public.agenda_book(text,date,time,text,text,uuid,text,integer,integer)','EXECUTE') as anon_pode_reservar_diretamente,
+select has_function_privilege('anon','public.agenda_book(text,date,time,text,text,uuid,integer,integer)','EXECUTE') as anon_pode_reservar_diretamente,
  has_function_privilege('anon','public.admin_action(text,jsonb)','EXECUTE') as anon_pode_administrar,
  has_table_privilege('anon','public.clients','SELECT') as anon_pode_listar_clientes,
  has_table_privilege('anon','public.appointments','SELECT') as anon_pode_listar_reservas;
+
+select has_function_privilege('anon','public.agenda_rate_limit(text,text)','EXECUTE') as anon_pode_escolher_limites,
+ has_function_privilege('authenticated','public.agenda_book(text,date,time,text,text,uuid,integer,integer)','EXECUTE') as usuario_pode_reservar_diretamente,
+ has_table_privilege('anon','public.audit_log','SELECT') as anon_pode_listar_auditoria,
+ has_table_privilege('anon','public.admin_users','SELECT') as anon_pode_listar_administradores;

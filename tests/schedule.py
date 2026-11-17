@@ -26,7 +26,7 @@ def slots(service,date):
     return [s['time'] for s in json.loads(db.sql(f"set role service_role;select public.agenda_availability('{service}','{date}','{date}');"))['slots']]
 def book(service,date,time,phone='5511912345678'):
     duration,price=services[service]
-    return f"set role service_role;select public.agenda_book('{service}','{date}','{time}','Cliente Teste','{phone}','{uuid.uuid4()}','{uuid.uuid4()}',{price},{duration});"
+    return f"set role service_role;select public.agenda_book('{service}','{date}','{time}','Cliente Teste','{phone}','{uuid.uuid4()}',{price},{duration});"
 def snapshot(tables):
     return {table:db.sql(f"select coalesce(jsonb_agg(to_jsonb(v) order by to_jsonb(v)::text),'[]') from {table} v;") for table in tables}
 

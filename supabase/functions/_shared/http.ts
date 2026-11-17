@@ -1,5 +1,5 @@
-export function cors(req: Request) {
-  const origins = (Deno.env.get('ALLOWED_ORIGINS') || '').split(',');
+export function cors(req: Request, allowedOrigins = Deno.env.get('ALLOWED_ORIGINS') || '') {
+  const origins = allowedOrigins.split(',').map(s=>s.trim()).filter(Boolean);
   const origin = req.headers.get('origin') || '';
   return {
     'Access-Control-Allow-Origin': origins.includes(origin) ? origin : 'null',

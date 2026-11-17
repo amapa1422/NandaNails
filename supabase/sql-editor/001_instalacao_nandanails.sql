@@ -19,7 +19,7 @@ begin
 end $$;
 
 -- Fonte: 202611170001_agenda.sql
--- SHA-256 (UTF-8, LF): 10d23f261aa119fcc30473ceb48faee440e0aee8846c9d870d032179f8320484
+-- SHA-256 (UTF-8, LF): 9289251a045a141c7d795da8a8b3aec5d021da99714fab220af73391286817e7
 create extension if not exists btree_gist;
 create schema if not exists private;
 revoke all on schema private from public;
@@ -35,7 +35,8 @@ insert into public.services values
  ('esmaltacao-gel','Esmaltação em Gel','Brilho e acabamento duradouro nas mãos.',60,7000,true),
  ('esmaltacao-gel-pe','Esmaltação em Gel no Pé','Esmaltação em gel feita especialmente nos pés.',60,6000,true),
  ('manutencao-alongamento','Manutenção de Alongamento','Manutenção para preservar estrutura e acabamento.',90,6500,true),
- ('remocao','Remoção','Remoção cuidadosa do material.',30,1500,true);
+ ('remocao','Remoção','Remoção cuidadosa do material.',30,1500,true)
+on conflict(id) do nothing;
 create table public.clients(
  id uuid primary key default gen_random_uuid(), name text not null check(length(name) between 3 and 80),
  phone text not null unique check(phone ~ '^55[1-9]{2}([2-5][0-9]{7}|9[0-9]{8})$'), created_at timestamptz not null default now()
@@ -77,6 +78,10 @@ create table public.notification_outbox(
  provider_id text, last_error text, updated_at timestamptz not null default now()
 );
 create table private.rate_limits(bucket text primary key, count integer not null, expires_at timestamptz not null);
+create table private.used_challenges(digest text primary key check(digest ~ '^[0-9a-f]{64}$'),expires_at timestamptz not null);
+revoke all on private.rate_limits from public,anon,authenticated;
+revoke all on private.used_challenges from public,anon,authenticated;
+revoke all on sequence public.audit_log_id_seq from public,anon,authenticated;
 
 create function public.is_admin() returns boolean language sql stable security definer set search_path='' as $$
  select exists(select 1 from public.admin_users where user_id=auth.uid())
@@ -86,7 +91,7 @@ grant execute on function public.is_admin() to authenticated;
 do $$ declare t text; begin
  foreach t in array array['admin_users','services','clients','availability','appointments','schedule_blocks','audit_log','notification_outbox'] loop
   execute format('alter table public.%I enable row level security',t);
-  execute format('revoke all on public.%I from anon, authenticated',t);
+  execute format('revoke all on public.%I from public, anon, authenticated',t);
   execute format('grant select on public.%I to authenticated',t);
   execute format('create policy admin_read on public.%I for select to authenticated using (public.is_admin())',t);
  end loop;
@@ -116,9 +121,37 @@ create function public.agenda_availability(p_service text,p_from date,p_to date)
 language sql stable security definer set search_path='' as $$
  select jsonb_build_object('slots',coalesce((select jsonb_agg(s) from (select distinct slot_date as date,slot_time as "time" from private.slots(p_service,p_from,p_to)) s),'[]'::jsonb))
 $$;
-create function public.agenda_book(p_service text,p_date date,p_time time,p_name text,p_phone text,p_request uuid,p_rate_key text,p_expected_price integer,p_expected_duration integer)
+-- Chamado pela Edge Function em RPC própria ANTES da reserva/captcha.
+-- Não recebe IP do navegador. Os limites globais não dependem de identidade.
+create function public.agenda_rate_limit(p_action text,p_subject text default null)
+returns boolean language plpgsql security definer set search_path='' as $$
+declare quota integer; ttl interval; hits integer; rate_bucket text;
+begin
+ if p_action in ('catalog','availability') and p_subject is null then quota=300;ttl=interval '1 minute';
+ elsif p_action='book' and p_subject is null then quota=60;ttl=interval '1 hour';
+ elsif p_action='book_phone' and p_subject ~ '^[0-9a-f]{64}$' then quota=5;ttl=interval '1 hour';
+ else raise exception 'INVALID_RATE_SCOPE';end if;
+ rate_bucket=p_action||':'||coalesce(p_subject,'global');
+ insert into private.rate_limits(bucket,count,expires_at) values(rate_bucket,1,now()+ttl)
+ on conflict(bucket) do update set
+  count=case when private.rate_limits.expires_at<=now() then 1 else least(private.rate_limits.count+1,quota+1) end,
+  expires_at=case when private.rate_limits.expires_at<=now() then now()+ttl else private.rate_limits.expires_at end
+ returning count into hits;
+ return hits<=quota;
+end $$;
+-- Claim atômico após Siteverify: protege também contra replays concorrentes.
+create function public.agenda_consume_challenge(p_digest text) returns boolean
+language plpgsql security definer set search_path='' as $$
+declare inserted integer;
+begin
+ delete from private.used_challenges where expires_at<now();
+ insert into private.used_challenges(digest,expires_at) values(p_digest,now()+interval '5 minutes') on conflict(digest) do nothing;
+ get diagnostics inserted=row_count;
+ return inserted=1;
+end $$;
+create function public.agenda_book(p_service text,p_date date,p_time time,p_name text,p_phone text,p_request uuid,p_expected_price integer,p_expected_duration integer)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare a public.appointments; s public.services; cid uuid; start_time timestamptz; hits integer;
+declare a public.appointments; s public.services; cid uuid; start_time timestamptz;
 begin
  -- Todas as mutações da agenda compartilham o mesmo bloqueio transacional.
  perform pg_advisory_xact_lock(687341902);
@@ -129,11 +162,6 @@ begin
   if a.service_id<>p_service or a.starts_at<>(p_date+p_time) at time zone 'America/Sao_Paulo'
    or a.client_name<>trim(p_name) or not exists(select 1 from public.clients where id=a.client_id and phone=p_phone) then raise exception 'INVALID_REQUEST';end if;
  else
-  if p_rate_key is null or length(p_rate_key)>128 then raise exception 'INVALID_INPUT';end if;
-  insert into private.rate_limits values(p_rate_key,1,now()+interval '1 hour') on conflict(bucket) do update
-   set count=case when private.rate_limits.expires_at<now() then 1 else private.rate_limits.count+1 end,
-    expires_at=case when private.rate_limits.expires_at<now() then now()+interval '1 hour' else private.rate_limits.expires_at end returning count into hits;
-  if hits>8 then raise exception 'RATE_LIMIT';end if;
   if (select count(*) from public.appointments b join public.clients c on c.id=b.client_id where c.phone=p_phone and b.created_at>now()-interval '1 day')>=5 then raise exception 'RATE_LIMIT';end if;
   select * into s from public.services where id=p_service and active;
   if not found then raise exception 'SERVICE_UNAVAILABLE';end if;
@@ -195,6 +223,7 @@ begin
   update public.services set name=p_data->>'name',description=p_data->>'description',duration_minutes=(p_data->>'duration_minutes')::integer,
    price_cents=(p_data->>'price_cents')::integer,active=(p_data->>'active')::boolean where id=p_data->>'id';
  elsif p_action='hours' then
+  if jsonb_typeof(p_data->'hours') is distinct from 'array' or jsonb_array_length(p_data->'hours')>28 then raise exception 'INVALID_HOURS';end if;
   delete from public.availability;
   insert into public.availability(weekday,opens,closes,active)
    select weekday,opens::time,closes::time,active from jsonb_to_recordset(p_data->'hours') as h(weekday integer,opens text,closes text,active boolean);
@@ -227,15 +256,15 @@ language sql security definer set search_path='' as $$
  next_attempt_at=now()+interval '5 minutes'*attempts where id=p_id and state='processing'
 $$;
 revoke all on all functions in schema private from public,anon,authenticated;
-revoke all on function public.agenda_catalog(), public.agenda_availability(text,date,date),
- public.agenda_book(text,date,time,text,text,uuid,text,integer,integer), public.admin_action(text,jsonb),
+revoke all on function public.agenda_catalog(), public.agenda_availability(text,date,date), public.agenda_rate_limit(text,text),public.agenda_consume_challenge(text),
+ public.agenda_book(text,date,time,text,text,uuid,integer,integer), public.admin_action(text,jsonb),
  public.claim_notification(),public.finish_notification(uuid,text,text,text) from public,anon,authenticated;
-grant execute on function public.agenda_catalog(), public.agenda_availability(text,date,date),
- public.agenda_book(text,date,time,text,text,uuid,text,integer,integer),public.claim_notification(),public.finish_notification(uuid,text,text,text) to service_role;
+grant execute on function public.agenda_catalog(), public.agenda_availability(text,date,date), public.agenda_rate_limit(text,text),public.agenda_consume_challenge(text),
+ public.agenda_book(text,date,time,text,text,uuid,integer,integer),public.claim_notification(),public.finish_notification(uuid,text,text,text) to service_role;
 grant execute on function public.admin_action(text,jsonb) to authenticated;
 
 -- Fonte: 202611170002_horarios_padrao.sql
--- SHA-256 (UTF-8, LF): 13fdc44bf10e456b87152b3e4e753b9f5aaa5df5990d2d92d0c417b92b8cc100
+-- SHA-256 (UTF-8, LF): b7d8b29528c6c4a5c67ca4edaa00a6d838635bb4f139f37f2c13d9a5a2b310e3
 -- Atualiza apenas o padrão identificado na migration 001, nunca reservas.
 select pg_advisory_xact_lock(687341902);
 create table if not exists private.schedule_default_updates (
@@ -292,10 +321,20 @@ returns table(slot_date date,slot_time text,starts_at timestamptz) language sql 
  from public.services s
  cross join generate_series(p_from::timestamp,p_to::timestamp,interval '1 day') d
  join public.availability a on a.weekday=extract(dow from d)::integer and a.active
- cross join lateral generate_series((d::date+a.opens) at time zone 'America/Sao_Paulo',
-  (d::date+a.closes) at time zone 'America/Sao_Paulo'-s.duration_minutes*interval '1 minute',interval '30 minutes') x
+ cross join lateral (
+  -- Inícios explícitos independem da grade baseada na abertura do turno.
+  select (d::date+t) at time zone 'America/Sao_Paulo' as x
+   from private.allowed_weekday_starts r cross join lateral unnest(r.starts) t
+   where r.weekday=a.weekday
+  union all
+  select g from generate_series((d::date+a.opens) at time zone 'America/Sao_Paulo',
+   (d::date+a.closes) at time zone 'America/Sao_Paulo'-s.duration_minutes*interval '1 minute',interval '30 minutes') g
+   where not exists(select 1 from private.allowed_weekday_starts r where r.weekday=a.weekday)
+ ) candidates
  where s.id=p_service and s.active and p_to>=p_from and p_to-p_from<=31
  and d::date between (now() at time zone 'America/Sao_Paulo')::date and (now() at time zone 'America/Sao_Paulo')::date+90
+ and x>=(d::date+a.opens) at time zone 'America/Sao_Paulo'
+ and x+s.duration_minutes*interval '1 minute'<=(d::date+a.closes) at time zone 'America/Sao_Paulo'
  and private.start_allowed(d::date,x)
  and x>now()+interval '30 minutes'
  and not exists(select 1 from public.appointments b where b.status<>'cancelled' and (p_ignore is null or b.id<>p_ignore)
@@ -343,7 +382,8 @@ begin
    or not private.start_allowed((p_data->>'date')::date,start_time)
    or not exists(select 1 from public.availability v where v.active and v.weekday=extract(dow from (p_data->>'date')::date)
     and start_time>=((p_data->>'date')::date+v.opens) at time zone 'America/Sao_Paulo' and end_time<=((p_data->>'date')::date+v.closes) at time zone 'America/Sao_Paulo'
-    and mod(extract(epoch from start_time-(((p_data->>'date')::date+v.opens) at time zone 'America/Sao_Paulo')),1800)=0)
+    and (exists(select 1 from private.allowed_weekday_starts r where r.weekday=v.weekday)
+     or mod(extract(epoch from start_time-(((p_data->>'date')::date+v.opens) at time zone 'America/Sao_Paulo')),1800)=0))
    or exists(select 1 from public.schedule_blocks b where tstzrange(b.starts_at,b.ends_at,'[)') && tstzrange(start_time,end_time,'[)')) then raise exception 'SLOT_CONFLICT';end if;
   update public.appointments set starts_at=start_time,ends_at=end_time,updated_at=now() where id=a.id;rid=a.id;
  elsif p_action='block' then
@@ -356,10 +396,16 @@ begin
   update public.services set name=p_data->>'name',description=p_data->>'description',duration_minutes=(p_data->>'duration_minutes')::integer,
    price_cents=(p_data->>'price_cents')::integer,active=(p_data->>'active')::boolean where id=p_data->>'id';
  elsif p_action='hours' then
+  if jsonb_typeof(p_data->'hours') is distinct from 'array' or jsonb_array_length(p_data->'hours')>28 then raise exception 'INVALID_HOURS';end if;
   delete from public.availability;
   insert into public.availability(weekday,opens,closes,active)
    select weekday,opens::time,closes::time,active from jsonb_to_recordset(p_data->'hours') as h(weekday integer,opens text,closes text,active boolean);
   if exists(select 1 from public.availability x join public.availability y on x.id<>y.id and x.weekday=y.weekday and x.active and y.active and x.opens<y.closes and y.opens<x.closes) then raise exception 'OVERLAPPING_HOURS';end if;
+  -- Uma abertura incompatível não pode ser salva silenciosamente como dia vazio.
+  if exists(select 1 from public.availability v join private.allowed_weekday_starts r on r.weekday=v.weekday
+    where v.active and not exists(select 1 from unnest(r.starts) t where t>=v.opens and t<v.closes)) then
+   raise exception 'HOURS_WITHOUT_ALLOWED_START';
+  end if;
  else raise exception 'INVALID_ACTION';end if;
  insert into public.audit_log(actor,action,record_id,details) values(auth.uid(),p_action,coalesce(rid::text,p_data->>'id'),
   case when p_action in ('status','reschedule') then jsonb_build_object('before',to_jsonb(a)-'client_name'-'client_id','after',p_data) else p_data end);

@@ -21,7 +21,7 @@
   function mountCaptcha() {
     if (!configured) return;
     window.nnCaptchaReady = () => {
-      widget = window.turnstile.render('#captcha',{sitekey:c.turnstileSiteKey,theme:'dark',size:'flexible',callback:t=>{captchaToken=t;},'expired-callback':()=>{captchaToken='';},'error-callback':()=>{captchaToken='';}});
+      widget = window.turnstile.render('#captcha',{sitekey:c.turnstileSiteKey,action:'booking',theme:'dark',size:'flexible',callback:t=>{captchaToken=t;},'expired-callback':()=>{captchaToken='';},'error-callback':()=>{captchaToken='';}});
     };
     const script=document.createElement('script');
     script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?onload=nnCaptchaReady&render=explicit';script.async=true;document.head.append(script);
