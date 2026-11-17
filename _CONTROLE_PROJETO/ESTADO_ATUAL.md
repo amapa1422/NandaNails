@@ -96,3 +96,5 @@ Revisão final: 15 testes Node; testes SQL de segurança (privilégios reais com
 Limites operacionais: sem CAPTCHA, bots podem alternar telefones, consumir a cota global ou ocupar horários válidos. Cotas compartilhadas podem bloquear clientes legítimas; não são WAF nem verificação de posse do telefone. Execução Deno hospedada, Supabase/Auth remoto, carga real e Safari físico continuam sem teste. Não afirmar ativação online nem garantia contra automação.
 
 Validação atual sem CAPTCHA: 17 testes Node, 29 grupos SQL e navegador Chromium em seis larguras aprovados. Histórico aplicado e arquivos visuais preservados; detalhes em `HISTORICO_ALTERACOES.md`.
+
+Versão atual sem CAPTCHA: commit principal `d9cd450bcf0ab5cd295f8406ae6cb37fa977557b`; tag local `nandanails-sem-captcha-2026-11-17` inclui o registro final. Não publicada.

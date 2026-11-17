@@ -2,6 +2,8 @@
 
 ## 17/11/2026 — agendamento sem Turnstile ou qualquer CAPTCHA
 
+Commit principal: `d9cd450bcf0ab5cd295f8406ae6cb37fa977557b`. Tag local da entrega documentada: `nandanails-sem-captcha-2026-11-17` (inclui o registro final; não significa versão publicada).
+
 - Pedido: remover CAPTCHA, preservando cotas, validações, confirmação persistida e segurança. O usuário informou migrations aplicadas; nenhum SQL foi alterado ou reaplicado.
 - Recuperação: `backup-nandanails-antes-sem-captcha` → `3cb92400de026920e84973c5542af1c13a022813`.
 - Código: `js/api.js`, `js/config.js`, `js/booking.js`, `index.html`, `privacidade.html`, `supabase/functions/_shared/booking-handler.mjs`, `.env.example`. Removidos widget/script/token e verificação externa. Exigidos JSON, entrada válida e ID retornado pelo banco para confirmar.
