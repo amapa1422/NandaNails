@@ -1,0 +1,7 @@
+project_id = "nandanails-agendamento"
+
+[functions.booking]
+verify_jwt = false
+
+[functions.notify]
+verify_jwt = false

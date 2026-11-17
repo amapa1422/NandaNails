@@ -1,0 +1,13 @@
+{
+  "name": "nandanails-agendamento",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python -m http.server 4173 --bind 127.0.0.1",
+    "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "test:db": "python tests/database.py",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/package.mjs",
+    "test:browser": "node tests/browser.mjs"
+  }
+}
