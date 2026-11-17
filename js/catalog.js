@@ -14,7 +14,9 @@ window.LUMIERE_DEFAULTS = {
     {id:'manutencao-alongamento',name:'Manutenção de Alongamento',description:'Manutenção para preservar estrutura e acabamento.',minutes:90,price:65,active:true},
     {id:'remocao',name:'Remoção',description:'Remoção cuidadosa do material.',minutes:30,price:15,active:true}
   ],
-  schedule: {0:null,1:['09:00','18:00'],2:['09:00','18:00'],3:['09:00','18:00'],4:['09:00','18:00'],5:['09:00','18:00'],6:['09:00','14:00']},
+  // Dias úteis: 18h é o limite técnico herdado, não um novo início permitido.
+  schedule: {0:null,1:['15:00','18:00'],2:['15:00','18:00'],3:['15:00','18:00'],4:['15:00','18:00'],5:['15:00','18:00'],6:['08:00','16:00']},
+  allowedStarts: {1:['15:00','16:00'],2:['15:00','16:00'],3:['15:00','16:00'],4:['15:00','16:00'],5:['15:00','16:00']},
   intervalMinutes:30,
   bufferMinutes:0,
   // Datas indisponíveis do HTML original (já passadas, mantidas como referência).

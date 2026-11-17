@@ -17,7 +17,7 @@ Sem configuração, a galeria e o catálogo original funcionam; a agenda informa
 
 1. Crie **um projeto novo e separado**, preferencialmente `nandanails-agendamento`. Não utilize o projeto Livre Escolha. Nenhum projeto remoto foi acessado ou modificado neste trabalho.
 2. Instale a CLI Supabase e autentique-se na sua máquina. Confira manualmente o identificador do novo projeto antes de executar comandos remotos.
-3. Aplique `supabase/migrations/202611170001_agenda.sql` no novo projeto (SQL Editor ou CLI). A migration deve ser executada uma vez, como proprietária do banco.
+3. Aplique as migrations de `supabase/migrations/` em ordem no novo projeto (SQL Editor ou CLI), como proprietária do banco. A `001` cria o schema histórico; a `002` atualiza somente a disponibilidade padrão identificada. Em projeto existente, nunca reaplique a `001`; revise a `002` e obtenha autorização antes de executá-la em produção.
 4. Crie a conta da Nanda pelo painel Supabase Authentication, desabilite cadastro público e insira o UUID autorizado:
 
 ```sql
@@ -41,8 +41,10 @@ O ambiente Supabase fornece `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` às fun
 
 - Fuso da profissional: `America/Sao_Paulo`; banco armazena `timestamptz`. A interface administrativa envia datas locais com `-03:00`, adequado ao fuso atual do estúdio; revisar se a legislação de horário de verão mudar.
 - Catálogo inicial: 120 min / 9000 centavos, 60 / 7000, 60 / 6000, 90 / 6500, 30 / 1500. Interface converte apenas para exibição.
-- Abertura inicial herdada do original: segunda a sexta, 09–18h; sábado, 09–14h. Confirme estes horários com a Nanda antes de ativar produção.
-- Grade a cada 30 minutos a partir da abertura de cada turno, antecedência mínima de 30 minutos e horizonte de 90 dias, validados no servidor.
+- Disponibilidade padrão atual: segunda a sexta somente inícios às **15h e 16h**; sábado das **08h às 16h**, com término obrigatório até 16h; domingo fechado. Nos dias úteis, o limite técnico herdado de 18h permite que o serviço de 120 minutos iniciado às 16h termine às 18h, sem liberar novos inícios.
+- Sábado mantém a grade existente de 30 minutos a partir da abertura, filtrada pela duração. Antecedência mínima de 30 minutos e horizonte de 90 dias continuam validados no servidor.
+- A migration `202611170002_horarios_padrao.sql` é idempotente e preserva reservas. Atualiza apenas os seis turnos que correspondem integralmente ao padrão original e não têm edição administrativa de horários registrada. Qualquer divergência é preservada; o resultado fica em `private.schedule_default_updates` (`applied` e `reason`). Configurações manuais indistinguíveis do seed e sem auditoria não podem ter sua origem comprovada além desse fingerprint; revise o estado real antes da aplicação.
+- Nos bancos atualizados do padrão, `private.allowed_weekday_starts` mantém as restrições de início inclusive após salvar turnos pelo painel. Alterar turnos continua limitando o término; liberar outros inícios exigiria alterar essa política explicitamente, com autorização. Configurações personalizadas ignoradas pela migration não recebem essa restrição.
 - Vários turnos por dia representam pausas. Nenhum turno representa folga semanal; bloqueios representam folgas específicas ou intervalos extraordinários. Reservas existentes são mantidas se o funcionamento mudar; cabe à administradora remarcar quando necessário.
 - Preço, duração, nome do serviço e nome da cliente são copiados para a reserva. Alterar o catálogo não modifica o contrato anterior. Remarcação preserva os valores e a duração da reserva.
 - Exclusão GiST de intervalos `[início,fim)` garante que reservas ativas não se sobreponham. Um lock transacional comum serializa reservas, bloqueios e alterações administrativas, incluindo verificações entre tabelas. Horários adjacentes são permitidos.
@@ -77,6 +79,7 @@ Antes de habilitar agendamentos reais, execute uma reserva controlada no projeto
 npm.cmd run check
 npm.cmd test
 python tests/database.py
+python tests/schedule.py
 node tests/browser.mjs
 ```
 

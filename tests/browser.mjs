@@ -18,7 +18,15 @@ ws.onmessage=async event=>{const m=JSON.parse(event.data);if(m.id){const p=pendi
   else if(request.url.includes('challenges.cloudflare.com')){contentType='application/javascript';body='window.nnCaptchaReady();';}
   else if(request.url.endsWith('/functions/v1/booking')){const data=JSON.parse(request.postData);
    if(data.action==='catalog')body=JSON.stringify({today:'2026-11-17',services:catalog});
-   if(data.action==='availability'){day=data.from;body=JSON.stringify({slots:[{date:day,time:'14:00'},{date:day,time:'16:00'}]});}
+   if(data.action==='availability'){
+    const slots=[],duration=catalog.find(s=>s.id===data.serviceId).duration_minutes;
+    for(let d=new Date(data.from+'T12:00:00Z');d<=new Date(data.to+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1)){
+     const date=d.toISOString().slice(0,10),weekday=d.getUTCDay();if(date<'2026-11-17'||weekday===0)continue;
+     const starts=weekday===6?Array.from({length:17},(_,i)=>480+i*30).filter(m=>m+duration<=960):[900,960];
+     for(const m of starts)slots.push({date,time:`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`});
+    }
+    day=data.from;body=JSON.stringify({slots});
+   }
    if(data.action==='book'){bookings++;body=JSON.stringify({booking:{id:'mock-reserva',service_name:catalog[0].name,date:data.date,time:data.time,duration_minutes:120,price_cents:9000}});}
   } else if(request.url.includes('/auth/v1/token'))body=JSON.stringify({access_token:'mock-jwt',refresh_token:'mock-refresh',expires_in:3600});
   else if(request.url.endsWith('/rest/v1/rpc/is_admin'))body='true';
@@ -41,7 +49,9 @@ try{
  mock=true;await navigate('index.html');await wait('window.NN?.serverToday');
  for(const width of [320,375,393,430,768,1440]){await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);}
  await viewport(375);await evaluate('document.querySelector("#bookingServices button").click()');await wait('document.querySelector(".cal-day.open")');
+ assert.equal(await evaluate('[...document.querySelectorAll(".cal-day")].find(b=>b.textContent==="22").disabled'),true);
  await evaluate('document.querySelector(".cal-day.open").click()');await wait('document.querySelector("#timeGrid button")');
+ assert.deepEqual(await evaluate('[...document.querySelectorAll("#timeGrid button")].map(b=>b.textContent)'),['15:00','16:00']);
  await evaluate('document.querySelector("#timeGrid button").click()');
  assert.match(await evaluate('document.getElementById("bookingSummary").textContent'),/120 minutos/);
  await evaluate('document.getElementById("clientName").value="Cliente Teste";document.getElementById("clientPhone").value="11912345678";document.getElementById("clientPhone").dispatchEvent(new Event("input",{bubbles:true}))');
