@@ -2,6 +2,8 @@
 
 Evolução do HTML original, mantendo logo, fotografias, tema dark, vinho, rosa, dourado, galeria, navegação e animações. Frontend estático para GitHub Pages; PostgreSQL, Supabase Auth e Edge Functions para operações seguras. Nenhuma publicação foi realizada.
 
+Projeto Supabase de destino informado: `nandanails-agendamento` / `fdxocuhgiypynsjxsqtm`. A URL pública está em `js/config.js`; a Publishable key será preenchida localmente pelo usuário. **A primeira operação remota ainda aguarda autorização.** Para esta etapa, siga a [primeira entrega Supabase](docs/SUPABASE_PRIMEIRA_ENTREGA.md), que inclui diagnóstico, SQL completo e aplicação pelo SQL Editor.
+
 ## Executar localmente
 
 Requer Python 3 e, para verificações, Node 22 ou superior. Não há dependências de build.
@@ -15,9 +17,9 @@ Sem configuração, a galeria e o catálogo original funcionam; a agenda informa
 
 ## Configuração do projeto online
 
-1. Crie **um projeto novo e separado**, preferencialmente `nandanails-agendamento`. Não utilize o projeto Livre Escolha. Nenhum projeto remoto foi acessado ou modificado neste trabalho.
+1. Use exclusivamente o projeto novo e separado informado pelo usuário: `nandanails-agendamento`, identificador `fdxocuhgiypynsjxsqtm`. Não utilize o projeto Livre Escolha. Nenhum projeto remoto foi acessado ou modificado neste trabalho.
 2. Instale a CLI Supabase e autentique-se na sua máquina. Confira manualmente o identificador do novo projeto antes de executar comandos remotos.
-3. Aplique as migrations de `supabase/migrations/` em ordem no novo projeto (SQL Editor ou CLI), como proprietária do banco. A `001` cria o schema histórico; a `002` atualiza somente a disponibilidade padrão identificada. Em projeto existente, nunca reaplique a `001`; revise a `002` e obtenha autorização antes de executá-la em produção.
+3. Após autorização e verificação da estrutura real, escolha **um** caminho: executar as migrations de `supabase/migrations/` em ordem, ou o consolidado `supabase/sql-editor/001_instalacao_nandanails.sql` em banco sem objetos da agenda. A `001` cria o schema histórico; a `002` atualiza o padrão de horários identificado; a `003` oferece seed de serviços repetível, sem sobrescrever cadastros existentes. Não execute o consolidado depois das migrations nem reaplique a `001` em banco existente. Consulte o roteiro específico para SQL Editor e histórico da CLI.
 4. Crie a conta da Nanda pelo painel Supabase Authentication, desabilite cadastro público e insira o UUID autorizado:
 
 ```sql
@@ -80,6 +82,7 @@ npm.cmd run check
 npm.cmd test
 python tests/database.py
 python tests/schedule.py
+python tests/installation.py
 node tests/browser.mjs
 ```
 

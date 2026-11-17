@@ -1,5 +1,14 @@
 # Recuperação segura com Git
 
+## Ponto anterior à preparação Supabase
+
+- Tag: `backup-nandanails-antes-supabase-real`.
+- Commit: `a6360e1810a0c715d482bcf93c86706b285401d2`.
+- Criada em 17/11/2026, após conferir árvore limpa; nenhuma alteração local foi apagada e nenhuma tag anterior foi substituída.
+- Para consultar: `git show --stat backup-nandanails-antes-supabase-real`.
+- Para recuperar após preservar trabalho pendente: `git switch -c recuperacao-nandanails-antes-supabase backup-nandanails-antes-supabase-real` (use nome novo se a branch existir).
+- Nesta entrega não houve operação remota; recuperar o código não requer desfazer banco remoto. Se SQL for aplicado no futuro, a recuperação do Git não desfaz a migration: exige revisão específica, autorização e preservação dos dados.
+
 ## Ponto anterior à alteração de horários
 
 - Tag: `backup-nandanails-antes-horarios`.

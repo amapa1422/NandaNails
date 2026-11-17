@@ -1,5 +1,25 @@
 # Histórico de alterações
 
+## 17/11/2026 — primeira entrega Supabase: auditoria e preparação local
+
+- Pedido: preparar integração com o projeto exclusivo `fdxocuhgiypynsjxsqtm`, começando pela auditoria e migrations; aguardar autorização para a primeira operação remota.
+- Ponto anterior: árvore limpa em `a6360e1810a0c715d482bcf93c86706b285401d2`; tag inédita `backup-nandanails-antes-supabase-real` criada, sem sobrescrever referências.
+- Diagnóstico: URL/chaves vazias impediam `configured`; `serverToday` depende da resposta `booking/catalog`, derivada do relógio PostgreSQL em `America/Sao_Paulo`. A guarda continua intacta. A URL pública informada foi preenchida; Publishable key fica a cargo do usuário e não foi solicitada pelo chat.
+- Criados: `supabase/migrations/202611170003_servicos_iniciais.sql`; `scripts/prepare-supabase.mjs`; `supabase/sql-editor/000_verificar_estrutura.sql`, `001_instalacao_nandanails.sql`, `002_conferir_instalacao.sql`; `tests/installation.py`, `tests/installation.test.mjs`; `docs/SUPABASE_PRIMEIRA_ENTREGA.md`.
+- Modificados: `js/config.js` (somente URL pública e comentário); `README.md`; `AGENTS.md`; documentos de controle (estado, histórico, recuperação; regra permanente de autorização preservada).
+- Motivo: disponibilizar SQL completo revisável para o SQL Editor, com schema existente, RLS, reservas transacionais, horários atuais e seed repetível sem sobrescrever serviços personalizados. Mantidas as migrations históricas e o comportamento da interface. O consolidado contém hashes das fontes e uma transação, e rejeita instalação sobre tabelas existentes.
+- Testes executados nesta etapa:
+  - `node scripts/prepare-supabase.mjs`: aprovado — SQL completo gerado apenas localmente.
+  - `node scripts/check.mjs`: aprovado — sintaxe JavaScript, arquivos locais e IDs HTML.
+  - `npm.cmd test`: cinco testes aprovados — imagens originais, integridade do consolidado e adaptador WhatsApp com mocks.
+  - `python -u tests/database.py`: dez grupos de regressão aprovados no PostgreSQL local.
+  - `python -u tests/schedule.py`: oito grupos aprovados — horários, duração, preservação, remarcações e personalizações.
+  - `python -u tests/installation.py`: seis grupos aprovados — instalação/conferência, oito tabelas com RLS, anonimato e autorização, rejeição de reinstalação, seed idempotente/customizado, data do servidor, concorrência e equivalência do consolidado com as migrations.
+  - `npm.cmd run build`: pacote estático local regenerado com a URL pública; sem deploy. Verificações de sintaxe das funções TypeScript, links dos documentos, tag de recuperação, `git diff --check` e ausência de diferenças nos arquivos protegidos: aprovadas.
+- Limitações: apenas bancos locais descartáveis em `127.0.0.1:55432`, com shim de Auth. Não executamos navegador nesta etapa nem Deno/Edge Functions reais, Auth Supabase, chamadas ao projeto remoto ou envio real de WhatsApp. Os testes antigos de navegador usam mocks e não comprovam operação online.
+- Entrega operacional: roteiro do SQL Editor, mapeamento das tabelas, segurança, autorização administrativa por UID e próximos passos para `booking`, CORS e captcha em `docs/SUPABASE_PRIMEIRA_ENTREGA.md`. Nenhum usuário administrativo é criado pelo SQL inicial. WhatsApp continua pendente e sem ativação.
+- Sem publicação, `git push`, alterações em credenciais ou dados reais. A primeira operação remota aguarda autorização expressa do usuário.
+
 ## 17/11/2026 — ponto de recuperação anterior aos horários
 
 - Descrição: criado repositório Git exclusivo para NandaNails e registrado o estado integral anterior à alteração solicitada.

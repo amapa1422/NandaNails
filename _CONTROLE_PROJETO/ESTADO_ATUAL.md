@@ -1,6 +1,6 @@
 # Estado atual — NandaNails
 
-Última atualização: 17/11/2026. Concluído localmente: controle de versões e disponibilidade padrão.
+Última atualização: 17/11/2026. Concluído localmente: primeira entrega Supabase (auditoria e SQL para revisão). A primeira operação remota aguarda autorização expressa.
 
 ## Objetivo e arquitetura
 
@@ -16,6 +16,7 @@ assets/                        logo e 12 imagens únicas originais
 reference/                     HTML original e manifesto SHA-256
 supabase/migrations/           schema e atualizações versionadas
 supabase/functions/            booking, notify e adaptador WhatsApp
+supabase/sql-editor/           verificação prévia, instalação completa e conferência
 tests/                         Node, PostgreSQL local e Chromium com mocks
 scripts/                       verificações e pacote estático
 docs/ENTREGA.md                 relatório histórico da primeira entrega
@@ -41,9 +42,13 @@ HTML5, CSS3, JavaScript moderno, Node para testes; Python para servidor local e 
 
 ## Integrações e pendências
 
-Supabase, Supabase Auth, Turnstile e WhatsApp estão preparados no código, mas não configurados nem validados em produção. `js/config.js` contém somente campos públicos vazios; secrets ficam fora do frontend. Não existe integração com Livre Escolha.
+Supabase, Supabase Auth, Turnstile e WhatsApp estão preparados no código, mas não validados em produção. O usuário informou a criação do projeto separado `nandanails-agendamento`, URL `https://fdxocuhgiypynsjxsqtm.supabase.co`, região East US (Ohio). A URL foi configurada localmente em `js/config.js`; a Publishable key será preenchida pelo próprio usuário e a chave pública Turnstile continua pendente. Secrets ficam fora do frontend. Não existe integração com Livre Escolha. Não consultamos o estado remoto nem aplicamos SQL nele.
 
-Pendente: novo projeto Supabase exclusivo, implantação autorizada das migrations e funções, conta administrativa autorizada, chaves públicas, secrets, captcha, template Meta aprovado, destinatário/opt-in e agendador. Testes reais de persistência compartilhada, Auth e envio WhatsApp dependem dessa configuração e autorização. Não houve publicação ou `git push`.
+Pendente: autorização para a primeira operação remota, verificação do schema real, implantação autorizada das migrations e função `booking`, conta administrativa autorizada, chaves públicas, secrets e captcha. WhatsApp permanece para etapa futura, sem implantar/ativar `notify` ou agendador nesta entrega. Testes reais de persistência compartilhada e Auth dependem dessa configuração e autorização. Não houve publicação ou `git push`.
+
+Diagnóstico do bloqueio: `configured` exige URL, Publishable key e chave pública Turnstile; `serverToday` só vem da resposta `booking/catalog`, que consulta a data do PostgreSQL no fuso comercial. A guarda do frontend não foi removida. SQL aplicado sozinho não implanta a Edge Function e não ativa o calendário.
+
+Preparação atual: `docs/SUPABASE_PRIMEIRA_ENTREGA.md`; migration `202611170003_servicos_iniciais.sql` (seed idempotente que preserva serviços existentes); três SQLs em `supabase/sql-editor/`. O SQL completo inicial consolida `001`/`002`/`003` em uma transação e rejeita tabelas existentes. É alternativa à cadeia de migrations, não uma migration adicional. Não reaplicar em banco existente. O gerador local `scripts/prepare-supabase.mjs` inclui hashes das fontes, sem conexão de rede.
 
 ## Regras invariáveis
 
@@ -63,8 +68,12 @@ Referência anterior às alterações: tag `backup-nandanails-antes-horarios`, c
 
 Versão atual validada localmente: `nandanails-horarios-2026-11-17` (tag local; consultar o histórico para o commit). Essa referência não significa versão publicada nem integração online comprovada.
 
+Recuperação anterior à preparação Supabase: tag `backup-nandanails-antes-supabase-real`, commit `a6360e1810a0c715d482bcf93c86706b285401d2`. Continua sendo a referência estável anterior; a preparação nova não significa ativação online.
+
 A configuração padrão antiga era 09–18h nos dias úteis e 09–14h no sábado. A migration inicial é histórica e deve permanecer intacta; novas instalações precisam aplicar todas as migrations em ordem. Configurações personalizadas não podem ser substituídas automaticamente.
 
 Limitações herdadas: sem validação em Safari/iPhone físico, leitor de tela, Lighthouse móvel ou backend remoto; testes Chromium usam mocks. `docs/ENTREGA.md` relata a primeira entrega e não substitui este estado atual. Campos de configuração de horário no catálogo são referência; a disponibilidade real vem do servidor.
 
-Validação desta atualização: verificações estáticas, quatro testes Node, dez grupos de regressão PostgreSQL, oito grupos específicos da migration e teste Chromium em seis larguras. O teste do calendário inclui domingo fechado e somente 15h/16h em dia útil, com respostas simuladas. Os resultados e comandos estão no histórico.
+Validação da atualização anterior de horários: verificações estáticas, quatro testes Node, dez grupos de regressão PostgreSQL, oito grupos específicos da migration e teste Chromium em seis larguras. O teste do calendário inclui domingo fechado e somente 15h/16h em dia útil, com respostas simuladas. Os resultados e comandos estão no histórico.
+
+Validação adicional da primeira entrega Supabase: cinco testes Node; dez grupos de regressão PostgreSQL; oito grupos de horários; seis grupos da instalação completa. Incluem equivalência entre consolidado e migrations, RLS/grants sob permissões iniciais amplas, seed repetido/customizado, rejeição de reinstalação, data de referência e concorrência. Apenas bancos locais descartáveis. Navegador, Auth remoto, Edge Functions reais e mensagens reais não foram executados nesta etapa.
