@@ -8,6 +8,6 @@ Antes de modificar este projeto, leia:
 
 Consulte `_CONTROLE_PROJETO/RECUPERACAO.md` antes de restaurar versões. Preserve o escopo solicitado e atualize os documentos ao concluir. Não publique nem execute `git push` sem autorização.
 
-A primeira operação no projeto Supabase `fdxocuhgiypynsjxsqtm`, inclusive consulta, aguarda autorização expressa. Antes dela, leia `docs/SUPABASE_PRIMEIRA_ENTREGA.md`. Não confunda preparar SQL localmente com autorizar sua execução remota.
+Qualquer operação remota pelo Codex no projeto Supabase `fdxocuhgiypynsjxsqtm`, inclusive consulta, exige autorização expressa. O usuário informou que migrations `001`/`002`/`003` já foram aplicadas e a CLI está vinculada: não editar nem reaplicar esse histórico. Não confunda vínculo da CLI com autorização para deploy.
 
-Leia também `docs/REVISAO_MIGRATIONS.md` antes de alterar backend ou migrations. As versões `001`/`002` foram revisadas somente porque o usuário confirmou que ainda não as aplicou. Após aplicação em qualquer ambiente, use novas migrations para correções. O frontend nunca recebe `service_role`; cotas e consumo de captcha são RPCs exclusivas do backend. Não reintroduza `p_rate_key` no formulário ou em `agenda_book`.
+Leia `_CONTROLE_PROJETO/SEM_CAPTCHA.md` para a versão atual. Não reintroduzir Turnstile ou outro CAPTCHA sem nova solicitação. `docs/REVISAO_MIGRATIONS.md` documenta a revisão histórica anterior; após aplicação, usar novas migrations se indispensável. O frontend nunca recebe `service_role`; cotas são verificadas no backend. Os objetos antigos de consumo de captcha ficam intactos, sem uso no fluxo atual. Não reintroduza `p_rate_key` no formulário ou em `agenda_book`.

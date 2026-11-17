@@ -2,9 +2,9 @@
 
 Evolução do HTML original, mantendo logo, fotografias, tema dark, vinho, rosa, dourado, galeria, navegação e animações. Frontend estático para GitHub Pages; PostgreSQL, Supabase Auth e Edge Functions para operações seguras. Nenhuma publicação foi realizada.
 
-Projeto Supabase de destino informado: `nandanails-agendamento` / `fdxocuhgiypynsjxsqtm`. A URL pública está em `js/config.js`; a Publishable key será preenchida localmente pelo usuário. **A primeira operação remota ainda aguarda autorização.** Para esta etapa, siga a [primeira entrega Supabase](docs/SUPABASE_PRIMEIRA_ENTREGA.md), que inclui diagnóstico, SQL completo e aplicação pelo SQL Editor.
+Projeto Supabase de destino: `nandanails-agendamento` / `fdxocuhgiypynsjxsqtm`. A URL pública está em `js/config.js`; a Publishable key permanece sob configuração local do usuário. Nenhuma operação remota foi executada pelo Codex nesta entrega.
 
-Antes de aplicar, leia a [revisão final de segurança e ordem de execução](docs/REVISAO_MIGRATIONS.md). As migrations `001`/`002` foram revisadas por solicitação do usuário, que confirmou que nenhuma havia sido aplicada remotamente. O código da Edge Function deve acompanhar esta versão do SQL.
+**Estado atual informado pelo usuário:** migrations `001`/`002`/`003` já executadas e CLI vinculada. **Esta versão não usa CAPTCHA.** Não editar/reaplicar migrations nem executar deploy automaticamente. Siga o [roteiro atual sem CAPTCHA](_CONTROLE_PROJETO/SEM_CAPTCHA.md). Os documentos de primeira entrega/revisão de migrations são históricos.
 
 ## Executar localmente
 
@@ -21,25 +21,22 @@ Sem configuração, a galeria e o catálogo original funcionam; a agenda informa
 
 1. Use exclusivamente o projeto novo e separado informado pelo usuário: `nandanails-agendamento`, identificador `fdxocuhgiypynsjxsqtm`. Não utilize o projeto Livre Escolha. Nenhum projeto remoto foi acessado ou modificado neste trabalho.
 2. Instale a CLI Supabase e autentique-se na sua máquina. Confira manualmente o identificador do novo projeto antes de executar comandos remotos.
-3. Após autorização e verificação da estrutura real, escolha **um** caminho: executar as migrations de `supabase/migrations/` em ordem, ou o consolidado `supabase/sql-editor/001_instalacao_nandanails.sql` em banco sem objetos da agenda. A `001` cria o schema histórico; a `002` atualiza o padrão de horários identificado; a `003` oferece seed de serviços repetível, sem sobrescrever cadastros existentes. Não execute o consolidado depois das migrations nem reaplique a `001` em banco existente. Consulte o roteiro específico para SQL Editor e histórico da CLI.
+3. Para o projeto atual, as migrations já estão aplicadas segundo o usuário: **não reaplicar SQL ou executar `db push` para remover CAPTCHA**. Nenhuma alteração de banco é necessária. Os arquivos de instalação permanecem somente como histórico e referência para outros ambientes vazios.
 4. Crie a conta da Nanda pelo painel Supabase Authentication, desabilite cadastro público e insira o UUID autorizado:
 
 ```sql
 insert into public.admin_users(user_id) values ('UUID_DA_CONTA_DA_NANDA');
 ```
 
-5. Configure `js/config.js` com a URL do novo projeto, a chave **publishable/anon pública** e a chave pública do widget Cloudflare Turnstile. Esses três valores são públicos. A chave `service_role` nunca entra no frontend.
-6. Crie um widget Turnstile com os domínios permitidos. Configure os secrets do backend copiando `.env.example` para `.env` (ignorado pelo Git). Use valores aleatórios longos e independentes para `RATE_LIMIT_SALT` e `NOTIFY_WORKER_SECRET`. Liste os domínios exatos em `TURNSTILE_HOSTNAMES`, sem protocolo; `ALLOWED_ORIGINS` contém origens completas, sem barra final.
-7. Após autorizar a implantação no projeto novo, execute:
+5. Configure `js/config.js` somente com a URL do projeto e a chave **publishable/anon pública**. A chave `service_role` nunca entra no frontend. Não existe chave de CAPTCHA nesta versão.
+6. Configure os secrets necessários do backend a partir de `.env.example` (o arquivo `.env` é ignorado pelo Git). `RATE_LIMIT_SALT` deve ser aleatório e ter pelo menos 32 caracteres; preserve um valor existente adequado. `ALLOWED_ORIGINS` contém origens completas, sem barra final. Não são necessários secrets Turnstile. WhatsApp continua sendo uma configuração independente, pendente de autorização.
+7. Para publicar somente a função atualizada, depois de conferir o vínculo da CLI e os secrets necessários, execute manualmente:
 
 ```powershell
-supabase link --project-ref IDENTIFICADOR_DO_PROJETO_NOVO
-supabase secrets set --env-file .env
-supabase functions deploy booking
-supabase functions deploy notify
+supabase functions deploy booking --no-verify-jwt
 ```
 
-O ambiente Supabase fornece `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` às funções. A função pública `booking` exige Turnstile para criar reservas. O catálogo e a disponibilidade não expõem dados pessoais. `verify_jwt=false` é intencional: clientes não precisam de conta; `notify` exige seu próprio secret. O painel chama RPCs com o JWT de Supabase Auth e o banco verifica a lista de administradoras em cada operação. A sessão fica somente em memória, renova enquanto a página estiver aberta e exige novo login ao recarregar.
+Confira que a CLI está vinculada ao projeto correto antes de executar o comando manualmente. O ambiente Supabase mantém `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` exclusivamente no backend. A função `booking` não usa CAPTCHA; exige validações e cotas antes de gravar. O catálogo e a disponibilidade não expõem dados pessoais. `verify_jwt=false` permite clientes sem conta; não remove RLS nem autorização do painel. A sessão administrativa fica em memória e exige novo login ao recarregar. Não publicar `notify` para esta alteração.
 
 ## Regras da agenda
 
@@ -52,8 +49,8 @@ O ambiente Supabase fornece `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` às fun
 - Vários turnos por dia representam pausas. Nenhum turno representa folga semanal; bloqueios representam folgas específicas ou intervalos extraordinários. Reservas existentes são mantidas se o funcionamento mudar; cabe à administradora remarcar quando necessário.
 - Preço, duração, nome do serviço e nome da cliente são copiados para a reserva. Alterar o catálogo não modifica o contrato anterior. Remarcação preserva os valores e a duração da reserva.
 - Exclusão GiST de intervalos `[início,fim)` garante que reservas ativas não se sobreponham. Um lock transacional comum serializa reservas, bloqueios e alterações administrativas, incluindo verificações entre tabelas. Horários adjacentes são permitidos.
-- A confirmação aparece somente após resposta com ID persistido. Um UUID de requisição permite repetir uma tentativa de rede sem duplicar a reserva. Em caso de timeout, mantenha os mesmos dados e tente de novo após renovar o captcha; a resposta devolve a mesma reserva.
-- Antiabuso: a Edge Function conta tentativas em RPC independente, antes do captcha/reserva. Cotas globais: 300 consultas de catálogo/minuto, 300 de disponibilidade/minuto e 60 tentativas de reserva/hora. Após captcha válido, aplica até 5 tentativas/telefone/hora usando HMAC calculado no backend com secret de no mínimo 32 caracteres. O banco mantém também o limite de 5 reservas/telefone/dia. Falhas e conflitos não desfazem os contadores. Não usamos cabeçalhos de IP, request ID ou chaves enviadas pela cliente para escolher limites. `agenda_book` não recebe mais `p_rate_key`; a função de cotas é exclusiva de `service_role`. Turnstile exige hostname, ação `booking`, timestamp recente e sucesso do provedor.
+- A confirmação aparece somente após resposta com ID persistido, verificado no backend e no frontend. Um UUID de requisição permite repetir uma tentativa de rede sem duplicar a reserva. Em caso de timeout, mantenha os mesmos dados e tente de novo; a resposta pode devolver a mesma reserva, respeitando as cotas.
+- Antiabuso sem CAPTCHA: a Edge Function conta tentativas em RPC independente antes da reserva. Cotas globais: 300 consultas de catálogo/minuto, 300 de disponibilidade/minuto e 60 tentativas de reserva/hora; até 5 tentativas/telefone/hora usando HMAC calculado no backend com secret de no mínimo 32 caracteres. O banco mantém também 5 reservas/telefone/24h. Falhas e conflitos não desfazem os contadores. JSON obrigatório, limite de 4096 bytes, campos permitidos e validações estritas recusam entradas inválidas. Não usamos cabeçalhos de IP, request ID ou chaves enviadas pela cliente para escolher limites; cotas continuam exclusivas de `service_role`.
 - As cotas globais são compartilhadas pelo estúdio: podem causar indisponibilidade temporária sob abuso. Não substituem proteção WAF/gateway anterior à execução da função nem verificam a posse do número de telefone. Não há garantia de bloqueio de toda automação que resolva desafios válidos.
 - `clients`, reservas, bloqueios, auditoria e fila possuem RLS; visitantes não têm acesso direto. Usuária autenticada sem autorização não consegue ler dados nem administrar. Escritas ocorrem por funções com grants explícitos e `search_path` vazio.
 
@@ -74,7 +71,7 @@ Agende uma chamada POST a `/functions/v1/notify` a cada minuto, por um agendador
 
 ## Publicar no GitHub Pages, quando autorizado
 
-Execute `npm.cmd run check`, `npm.cmd test` e os testes locais de banco. Copie apenas `index.html`, `admin.html`, `privacidade.html`, `css/`, `js/` e `assets/` para a pasta a publicar. A pasta `reference/` é uma cópia para auditoria e não precisa ir para o site. Nunca publique `.env`, `.local/`, dumps ou dados de teste. Os caminhos são relativos e funcionam em subdiretórios do GitHub Pages. Configure HTTPS, as origens de CORS e os hostnames Turnstile definitivos. Nenhum `git push` ou deploy foi realizado automaticamente.
+Execute `npm.cmd run check`, `npm.cmd test` e os testes locais de banco. Copie apenas `index.html`, `admin.html`, `privacidade.html`, `css/`, `js/` e `assets/` para a pasta a publicar. A pasta `reference/` é uma cópia para auditoria e não precisa ir para o site. Nunca publique `.env`, `.local/`, dumps ou dados de teste. Os caminhos são relativos e funcionam em subdiretórios do GitHub Pages. Configure HTTPS e as origens de CORS. Publique o frontend atualizado separadamente da função quando autorizado; recarregue scripts antigos. Nenhum `git push` ou deploy foi realizado automaticamente.
 
 Antes de habilitar agendamentos reais, execute uma reserva controlada no projeto novo, confira a mesma reserva em outro dispositivo, teste um login não autorizado e verifique o telefone real do estúdio e o canal de contato da página de privacidade. Confirme também a política de retenção com a responsável.
 

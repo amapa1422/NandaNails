@@ -16,3 +16,5 @@ Antes de alterar código, identificar o commit atual e preservar alterações n�
 O controle documenta o estado; o Git recupera o código. Não duplicar imagens nesta pasta.
 
 Migrations aplicadas não devem ser reescritas. A revisão direta de `001`/`002` em 17/11/2026 foi autorizada pelo usuário antes de qualquer aplicação; não generalizar essa exceção para bancos existentes. Mantenha a entrada Edge e os grants da revisão compatíveis, sem aceitar cotas escolhidas pelo cliente ou expor `service_role`.
+
+O usuário confirmou posteriormente que `001`/`002`/`003` já foram aplicadas: preservá-las integralmente. A versão atual exclui todo CAPTCHA por decisão expressa; não reintroduzir provedor ou desafio sem nova solicitação. Não remover as cotas do backend para permitir reserva. Objetos históricos de CAPTCHA ficam sem uso, sem exclusão ou reaplicação do banco.

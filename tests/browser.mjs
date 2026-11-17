@@ -6,7 +6,7 @@ const targets=await(await fetch('http://127.0.0.1:9223/json')).json();
 const target=targets.find(x=>x.type==='page');
 if(!target)throw Error('No disposable browser target');
 const ws=new WebSocket(target.webSocketDebuggerUrl);await new Promise(r=>ws.onopen=r);
-let seq=0;const pending=new Map(),errors=[];let mock=false,bookings=0;
+let seq=0;const pending=new Map(),errors=[];let mock=false,bookings=0,bookingResult='valid';
 function call(method,params={}){return new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});}
 const catalog=[['molde-f1','Alongamento Molde F1',120,9000],['esmaltacao-gel','Esmaltação em Gel',60,7000],['esmaltacao-gel-pe','Esmaltação em Gel no Pé',60,6000],['manutencao-alongamento','Manutenção de Alongamento',90,6500],['remocao','Remoção',30,1500]].map(([id,name,duration_minutes,price_cents])=>({id,name,duration_minutes,price_cents,description:'Procedimento original',active:true}));
 let day='2026-11-20';
@@ -14,8 +14,8 @@ ws.onmessage=async event=>{const m=JSON.parse(event.data);if(m.id){const p=pendi
  if(m.method==='Runtime.exceptionThrown')errors.push(m.params.exceptionDetails.text+': '+m.params.exceptionDetails.exception?.description);
  if(m.method==='Fetch.requestPaused'){
   const {requestId,request}=m.params;let body,contentType='application/json';
-  if(mock&&request.url.endsWith('/js/config.js')){contentType='application/javascript';body=`window.NN_CONFIG={supabaseUrl:'http://127.0.0.1:4173',publishableKey:'mock',turnstileSiteKey:'mock'};window.turnstile={render:(s,o)=>{o.callback('mock-proof');return 1;},reset:()=>{}};`;}
-  else if(request.url.includes('challenges.cloudflare.com')){contentType='application/javascript';body='window.nnCaptchaReady();';}
+  if(mock&&request.url.endsWith('/js/config.js')){contentType='application/javascript';body=`window.NN_CONFIG={supabaseUrl:'http://127.0.0.1:4173',publishableKey:'mock'};`;}
+  else if(request.url.includes('challenges.cloudflare.com')){errors.push('Unexpected CAPTCHA dependency');await call('Fetch.failRequest',{requestId,errorReason:'BlockedByClient'});return;}
   else if(request.url.endsWith('/functions/v1/booking')){const data=JSON.parse(request.postData);
    if(data.action==='catalog')body=JSON.stringify({today:'2026-11-17',services:catalog});
    if(data.action==='availability'){
@@ -27,7 +27,7 @@ ws.onmessage=async event=>{const m=JSON.parse(event.data);if(m.id){const p=pendi
     }
     day=data.from;body=JSON.stringify({slots});
    }
-   if(data.action==='book'){bookings++;body=JSON.stringify({booking:{id:'mock-reserva',service_name:catalog[0].name,date:data.date,time:data.time,duration_minutes:120,price_cents:9000}});}
+   if(data.action==='book'){bookings++;if('captchaToken' in data)errors.push('Unexpected CAPTCHA token');body=JSON.stringify(bookingResult!=='valid'?bookingResult:{booking:{id:'mock-reserva',service_name:catalog[0].name,date:data.date,time:data.time,duration_minutes:120,price_cents:9000}});}
   } else if(request.url.includes('/auth/v1/token'))body=JSON.stringify({access_token:'mock-jwt',refresh_token:'mock-refresh',expires_in:3600});
   else if(request.url.endsWith('/rest/v1/rpc/is_admin'))body='true';
   else if(request.url.endsWith('/rest/v1/rpc/admin_action')){
@@ -56,10 +56,12 @@ try{
  assert.match(await evaluate('document.getElementById("bookingSummary").textContent'),/120 minutos/);
  await evaluate('document.getElementById("clientName").value="Cliente Teste";document.getElementById("clientPhone").value="11912345678";document.getElementById("clientPhone").dispatchEvent(new Event("input",{bubbles:true}))');
  assert.equal(await evaluate('document.getElementById("clientPhone").value'),'(11)91234-5678');
+ for(const badResult of [null,{booking:{}},{booking:{id:''}}]){bookingResult=badResult;await evaluate('document.getElementById("bookingForm").requestSubmit()');await wait('!document.querySelector("#bookingForm [type=submit]").disabled');assert.equal(await evaluate('document.getElementById("panelSuccess").classList.contains("active")'),false);}
+ bookingResult='valid';
  await evaluate('document.getElementById("bookingForm").requestSubmit();document.getElementById("bookingForm").requestSubmit()');
- await wait('document.getElementById("panelSuccess").classList.contains("active")');assert.equal(bookings,1);
+ await wait('document.getElementById("panelSuccess").classList.contains("active")');assert.equal(bookings,4);
  assert.match(await evaluate('document.getElementById("successSummary").textContent'),/mock-reserva/);
- console.log('PASS service, date, time, phone mask, summary, duplicate submit, database response confirmation (mock)');
+ console.log('PASS service, date, time, phone mask, summary, duplicate submit, database response confirmation, unconfirmed results never succeed, no CAPTCHA (mock)');
  await evaluate('document.getElementById("galleryMore").click()');assert.equal(await evaluate('document.querySelectorAll(".gallery-item").length'),10);
  await evaluate('document.querySelector(".gallery-item").click()');assert.equal(await evaluate('document.getElementById("lightbox").hidden'),false);
  await evaluate('document.getElementById("closeLightbox").click()');

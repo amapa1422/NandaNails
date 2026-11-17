@@ -1,5 +1,14 @@
 # Recuperação segura com Git
 
+## Ponto anterior à versão sem CAPTCHA
+
+- Tag: `backup-nandanails-antes-sem-captcha`.
+- Commit: `3cb92400de026920e84973c5542af1c13a022813`.
+- Criada após conferir a árvore limpa, sem sobrescrever tags ou alterações locais.
+- Consulta: `git show --stat backup-nandanails-antes-sem-captcha`.
+- Após preservar trabalho pendente, recuperar em branch nova: `git switch -c recuperacao-nandanails-com-captcha backup-nandanails-antes-sem-captcha` (escolher nome novo se já existir).
+- A recuperação conjunta de frontend/backend anterior voltaria a exigir configuração do Turnstile. Não publicar essa reversão sem nova autorização. As migrations `001`/`002`/`003` já foram aplicadas segundo o usuário; não reaplicar nem alterar o histórico. Esta remoção de CAPTCHA não mudou banco, RLS, grants ou constraints, e não precisa de rollback SQL.
+
 ## Ponto anterior à revisão final das migrations
 
 - Tag: `backup-nandanails-antes-revisao-migrations`.

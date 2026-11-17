@@ -63,7 +63,7 @@ by('bookingForm').addEventListener('submit',async e=>{
  submitting=true;const button=by('bookingForm').querySelector('[type=submit]');button.disabled=true;button.textContent='Registrando…';
  try{
   const result=await L.book({...JSON.parse(payload),requestId});
-  if(!result.booking?.id)throw new Error('O banco não confirmou a reserva. Tente novamente.');
+  if(!result?.booking?.id)throw new Error('O banco não confirmou a reserva. Tente novamente.');
   if(result.booking.status==='cancelled')throw new Error('Esta reserva foi cancelada. Escolha outro horário.');
   const booking=result.booking;
   summarize('successSummary',{serviceId,date,time});
@@ -79,7 +79,7 @@ function closeLightbox(){by('lightbox').hidden=true;document.body.style.overflow
 renderServices();renderGallery();
 const status=by('connectionStatus');
 if(!L.configured){status.textContent='Agendamento online em configuração.';document.querySelectorAll('#bookingServices button,.service-card').forEach(b=>{b.setAttribute('aria-disabled','true');if(b.tagName==='BUTTON')b.disabled=true;});}
-else{status.textContent='Conectando à agenda…';L.loadCatalog().then(()=>{status.textContent='';renderServices();L.mountCaptcha();}).catch(()=>{status.textContent='Agenda indisponível. Tente novamente em instantes.';document.querySelectorAll('#bookingServices button').forEach(b=>b.disabled=true);});}
+else{status.textContent='Conectando à agenda…';L.loadCatalog().then(()=>{status.textContent='';renderServices();}).catch(()=>{status.textContent='Agenda indisponível. Tente novamente em instantes.';document.querySelectorAll('#bookingServices button').forEach(b=>b.disabled=true);});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&L.configured){if(stage===2)renderCalendar();if(stage===3)renderTimes();}});
 })();
 

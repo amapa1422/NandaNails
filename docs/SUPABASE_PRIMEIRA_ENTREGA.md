@@ -1,5 +1,7 @@
 # Supabase — primeira entrega para revisão
 
+**Documento histórico da etapa com CAPTCHA.** O usuário informou posteriormente que `001`/`002`/`003` já foram aplicadas. Não reaplicar a instalação. A versão atual não usa CAPTCHA e está documentada em [`_CONTROLE_PROJETO/SEM_CAPTCHA.md`](../_CONTROLE_PROJETO/SEM_CAPTCHA.md).
+
 Data: 17/11/2026. Escopo concluído: auditoria local, preparação do SQL e roteiro de ativação. **Nenhuma conexão, consulta, migration, alteração de usuário ou mensagem foi executada no projeto remoto.** A primeira operação no Supabase aguarda autorização expressa.
 
 Revisão posterior solicitada pelo usuário: consulte `REVISAO_MIGRATIONS.md`. Como os SQLs ainda não foram aplicados, as versões `001`/`002` receberam correções de segurança antes da primeira implantação. Use os arquivos atuais e a Edge Function atualizada.

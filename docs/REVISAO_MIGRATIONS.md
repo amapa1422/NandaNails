@@ -1,5 +1,7 @@
 # Revisão final das migrations — 17/11/2026
 
+**Registro histórico da revisão anterior à aplicação.** O usuário informou depois que `001`/`002`/`003` já foram executadas. Seu conteúdo permanece intacto. A função atual não usa CAPTCHA; siga [`_CONTROLE_PROJETO/SEM_CAPTCHA.md`](../_CONTROLE_PROJETO/SEM_CAPTCHA.md), sem reaplicar SQL.
+
 Projeto de destino: **nandanails-agendamento**, identificador **fdxocuhgiypynsjxsqtm**. Nenhuma chamada, consulta, migration ou alteração de usuário foi feita nesse projeto. A revisão e todos os testes desta entrega são locais. Sem publicação ou `git push`.
 
 O usuário confirmou que as migrations ainda não foram aplicadas e pediu correções nos arquivos. Por isso, revisamos `001`/`002` diretamente antes da primeira implantação. **Se algum ambiente já tiver aplicado uma versão anterior, não reaplique esses arquivos:** será necessário gerar migrations compensatórias a partir da versão efetivamente instalada.

@@ -1,5 +1,27 @@
 # Histórico de alterações
 
+## 17/11/2026 — agendamento sem Turnstile ou qualquer CAPTCHA
+
+- Pedido: remover CAPTCHA, preservando cotas, validações, confirmação persistida e segurança. O usuário informou migrations aplicadas; nenhum SQL foi alterado ou reaplicado.
+- Recuperação: `backup-nandanails-antes-sem-captcha` → `3cb92400de026920e84973c5542af1c13a022813`.
+- Código: `js/api.js`, `js/config.js`, `js/booking.js`, `index.html`, `privacidade.html`, `supabase/functions/_shared/booking-handler.mjs`, `.env.example`. Removidos widget/script/token e verificação externa. Exigidos JSON, entrada válida e ID retornado pelo banco para confirmar.
+- Preservados: cotas globais, HMAC de telefone, contagem independente antes de reservar, transações, exclusão de sobreposição, RLS/grants, serviços, preços, calendário, CSS, imagens e animações. Objetos históricos de desafios permanecem restritos e sem uso. Nenhuma migration nova necessária.
+- Testes alterados: `tests/booking-handler.test.mjs`, `tests/browser.mjs`, cobrindo ausência de CAPTCHA, limites, falhas fechadas, validações, conflitos, respostas sem ID e envio duplo.
+- Documentação: criado `SEM_CAPTCHA.md`; atualizados `AGENTS.md`, `README.md`, estado, regras, recuperação, histórico e avisos históricos em `docs/SUPABASE_PRIMEIRA_ENTREGA.md` e `docs/REVISAO_MIGRATIONS.md`.
+- Testes executados, todos aprovados:
+  - `node scripts/check.mjs`; `node --check` no navegador, handler e entrada TypeScript.
+  - `npm.cmd test`: **17 testes Node**.
+  - `python -u tests/security.py`: **5 grupos**, RLS/privilégios, cotas persistentes e concorrentes, objetos legados, expediente e integridade referencial.
+  - `python -u tests/installation.py`: **6 grupos**, cadeia 001 → 002 → 003/consolidado, permissões, seed e concorrência em bancos locais novos.
+  - `python -u tests/schedule.py`: **8 grupos**, cinco serviços, duração, dias úteis 15h/16h, sábado até 16h, domingo, conflitos e personalizações.
+  - `python -u tests/database.py`: **10 grupos**, persistência, exclusão concorrente e regressões.
+  - `node tests/browser.mjs`: seis larguras (320, 375, 393, 430, 768, 1440), fluxo sem CAPTCHA, painel e galeria; três respostas sem confirmação bloqueadas; sem exceções ou rolagem horizontal.
+  - `npm.cmd run build`: pacote local regenerado. Conferências Git/Python: migrations/SQL Editor e arquivos visuais preservados, documentação e `git diff --check` aprovados.
+- Limitações: RPC do handler e backend do navegador simulados; SQL apenas em PostgreSQL local descartável. Sem Deno hospedado, Supabase/Auth remoto, carga/DoS, Safari físico ou WhatsApp real. O teste legado de replay verifica somente o objeto SQL preservado, sem CAPTCHA ativo.
+- Risco residual: bots podem alternar telefones, ocupar horários e esgotar cotas compartilhadas. HMAC não comprova posse do telefone; CORS não autentica scripts; cotas não substituem WAF. Acompanhar reservas e erros 429.
+- Publicação manual: `supabase functions deploy booking --no-verify-jwt`, na CLI vinculada a `nandanails-agendamento`. Conferir origens, salt e Publishable key; atualizar frontend separadamente. Não reaplicar SQL ou publicar `notify`.
+- Nenhuma consulta ou alteração remota, deploy, publicação ou `git push` executados.
+
 ## 17/11/2026 — revisão final de segurança e compatibilidade das migrations
 
 - Escopo autorizado: revisar `001`/`002`/`003`, backend e regras de expediente antes de qualquer aplicação remota. O usuário confirmou que ainda não executou os SQLs; essa autorização específica permite corrigir diretamente os arquivos locais históricos nesta ocasião.
