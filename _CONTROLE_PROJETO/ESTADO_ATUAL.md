@@ -2,6 +2,16 @@
 
 Última atualização: 18/11/2026. Versão atual sem Turnstile ou qualquer CAPTCHA, conforme solicitação expressa do usuário. Ele informou migrations `001`/`002`/`003` já aplicadas e CLI vinculada. Nenhuma operação remota foi realizada pelo Codex nesta otimização; deploy/publicação continuam manuais e não autorizados para execução automática.
 
+## Cursos aprovados — 18/11/2026
+
+Implementação local fiel aos componentes de `REFERENCIAS/nandanails_cursos_botoes_rosa (1).html`, preservando o index oficial: dois cursos independentes da agenda, seção/cards, detalhes em modal, dois botões rosa na primeira linha do hero e Conhecer os trabalhos abaixo. Completo: 3 dias, R$ 300,00, até 2× R$ 150,00 sem juros; tradicional: 2 dias, R$ 200,00 à vista ou até 2× com juros sem taxa inventada. WhatsApp `554491712430`, mensagens individuais e envio dependente da visitante; confirmar número antes de publicar.
+
+Arquivos: `index.html`, estilos limitados em `css/styles.css`, novo `js/courses.js`, teste browser e documentação. Scripts anteriores, painel/login, fotografias, logo/favicon, serviços, Auth, Edge Functions e migrations intactos. Cursos não entram em `public.services`, não consultam backend nem reservam horários. `dist/` regenerado; sem push ou publicação.
+
+Check, 23 testes Node, build e navegador com mocks em 320/375/390/430/768/1440 px aprovados. Inclui calendário/painel/galeria, mensagens, teclado, foco, modal e ausência de overflow. Propriedades coletadas dos cards iguais à referência em 390/1440 px; sem garantia pixel a pixel ou Safari físico. Suítes bloquearam rede externa; recarregamento exploratório fora da interceptação pode ter solicitado catálogo público com configuração local. Nenhuma escrita remota ou alteração do Supabase. Detalhes e limites: [docs/CURSOS.md](../docs/CURSOS.md).
+
+Recuperação: `backup-nandanails-antes-cursos` → `c8cda5cb709711abc29e337e00623de0c3170bfc`, preservando a prévia antes de editar; implementação pendente para revisão local.
+
 ## Favicon oficial — 18/11/2026
 
 Ícones criados exclusivamente a partir de `assets/nandanails-logo-original.jpg` (240 × 185), preservada byte a byte. Diretório versionado `assets/icons/n-v1/` contém ICO (16/32/48), PNGs 16/32/180/192/512 e manifest apenas com icons. `index.html` e `admin.html` receberam somente links no head, relativos e compatíveis com `/NandaNails/`. Desenho completo centralizado proporcionalmente em fundo compatível, sem recortar N/adornos ou modificar a logo do cabeçalho. Manifest não altera modo de abertura, navegação ou instalação. Gerador determinístico: `scripts/generate-favicons.ps1`; instruções e testes em [docs/FAVICONS.md](../docs/FAVICONS.md).

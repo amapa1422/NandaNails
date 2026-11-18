@@ -1,5 +1,14 @@
 # Histórico de alterações
 
+## 18/11/2026 — incorporação dos cursos aprovados
+
+- Referência integral preservada em `c8cda5cb709711abc29e337e00623de0c3170bfc`, tag inédita `backup-nandanails-antes-cursos`; base inicial `d2e8fc350f967d3caead9cb6fc67f2698b57a609`. A única pendência inicial era `REFERENCIAS/`, sem secrets. Git exigiu permissão do ambiente para gravar o ponto de recuperação.
+- Alterados index/CSS; criado `js/courses.js` autônomo, sem API/global/Supabase; ampliado teste browser. Dois cursos e cards, seleção independente, modal, foco/teclado, botões rosa em linha e WhatsApp por curso, com telefone exato sem acrescentar dígito. Preservados os demais scripts, serviços, painel/login, arquivos backend e imagens.
+- Atualizados estado, recuperação e `docs/CURSOS.md`, que lista diferenças necessárias, testes, limitações, telefone a confirmar e publicação manual. Prévia não substituiu o index oficial.
+- Aprovados: check, 23 testes Node, build, diff check e suíte Edge/Chromium com mocks em seis larguras (320/375/390/430/768/1440). Cursos completos/pagamentos/mensagens, modal/teclado/foco, botões, ausência de overflow, cinco procedimentos, calendário, falhas, confirmação, dez fotos e painel/login/logout simulados. Sem exceções JS na suíte. Comparação de propriedades coletadas de sete seletores dos cards igual em 390/1440 px, com fontes externas bloqueadas. Capturas em `.local/courses/`; não é comparação pixel a pixel.
+- Falhas iniciais corrigidas: equalizada altura dos botões em 390 px; teste de imagens lazy passou a aguardar decodificação; verificação desktop considera largura da janela sem confundir scrollbar. Navegador precisou de inicialização com permissão do ambiente.
+- Sem Safari/iPhone físico, Supabase/Auth/WhatsApp reais ou publicação. Durante diagnóstico, um recarregamento fora da interceptação pode ter solicitado catálogo público pela configuração local, sem confirmação desse acesso; nenhuma consulta remota adicional para investigar. Não afirmar ausência absoluta de consulta remota. Não houve escrita remota, migration, deploy, envio de mensagem ou push. `dist/` local regenerado.
+
 ## 18/11/2026 — atualização exclusiva dos ícones do site
 
 - Fonte localizada e inspecionada: `assets/nandanails-logo-original.jpg`, 240 × 185 px, fornecida pelo usuário. Preservada integralmente; SHA-256 `4f85e548f98f9ef0d6f1f54e2495f990f5aca6afba3910ecffe4fc0bc501d905`.

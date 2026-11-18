@@ -44,14 +44,66 @@ await call('Runtime.discardConsoleEntries');await call('Runtime.enable');await c
 async function evaluate(expression){const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description);return r.result.value;}
 async function wait(expression){const end=Date.now()+10000;while(Date.now()<end){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,60));}throw Error('Timeout: '+expression+' '+JSON.stringify(await evaluate('({config:window.NN_CONFIG,status:document.getElementById("connectionStatus")?.textContent})'))+' '+errors.join('\n'));}
 async function navigate(page){const url='http://127.0.0.1:4173/'+page+'?qa='+Date.now();await call('Page.navigate',{url});await wait('location.href==='+JSON.stringify(url)+'&&document.readyState==="complete"');}
-async function viewport(width,height=852){await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<800});}
+async function viewport(width,height=852){await call('Emulation.setDeviceMetricsOverride',{width,height,screenWidth:width,screenHeight:height,deviceScaleFactor:1,mobile:width<800});await evaluate('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');}
 try{
  await viewport(375);await navigate('index.html');await wait('document.querySelectorAll("#bookingServices button").length===5');
  assert.match(await evaluate('document.getElementById("connectionStatus").textContent'),/configuração/);
  assert.equal(await evaluate('[...document.querySelectorAll("#bookingServices button")].every(b=>b.disabled)'),true);
  console.log('PASS disconnected state never offers a fake reservation');
+
+ assert.equal(await evaluate('document.querySelectorAll("#bookingCourses button").length'),2);
+ await evaluate('window.coursePopups=[];window.open=(...args)=>window.coursePopups.push(args)');
+ for(const [key,title,price,days] of [['completo','Curso completo','R$ 300,00','3 DIAS'],['tradicional','Curso tradicional','R$ 200,00','2 DIAS']]){
+  await evaluate(`document.querySelector('#bookingCourses button:nth-child(${key==='completo'?1:2})').focus();document.activeElement.click()`);
+  assert.equal(await evaluate('document.getElementById("courseModal").hidden'),false);
+  assert.equal(await evaluate('document.getElementById("modalTitle").textContent'),title);
+  assert.equal(await evaluate('document.getElementById("modalPrice").textContent'),price);
+  assert.deepEqual(await evaluate('[...document.querySelectorAll("#modalList li")].map(li=>li.textContent)'),key==='completo'?['Molde F1','Esmaltação em gel','Soft Gel','Orientação presencial na loja indicada para os materiais necessários']:['Primeiro dia: teoria e café','Segundo dia: prática em modelo e café','Esmaltação tradicional sem alongamento','Diferenças entre esmaltação em gel, blindagem e banho de gel']);
+  assert.equal(await evaluate('document.getElementById("modalPayment").textContent'),key==='completo'?'Até 2× de R$ 150,00 sem juros':'À vista ou em até 2 parcelas com juros (taxa e total a confirmar)');
+  assert.ok((await evaluate('document.getElementById("bookingCourses").textContent')).includes(days));
+  assert.equal(await evaluate('document.getElementById("panel1").classList.contains("active")'),true);
+  assert.equal(bookings,0);
+  await evaluate('document.getElementById("interestButton").click()');
+  const args=await evaluate('window.coursePopups.at(-1)');
+  const link=new URL(args[0]);assert.equal(link.origin+link.pathname,'https://wa.me/554491712430');
+  assert.equal(link.searchParams.get('text'),`Olá! Tenho interesse no ${title} da NandaNails (${price}). Gostaria de receber mais informações sobre as próximas turmas, datas, horários, conteúdo do curso e formas de pagamento.`);
+  assert.deepEqual(args.slice(1),['_blank','noopener,noreferrer']);
+  await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Tab",shiftKey:true,bubbles:true,cancelable:true}))');
+  assert.equal(await evaluate('document.activeElement.id'),'backModal');
+  await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Tab",bubbles:true,cancelable:true}))');
+  assert.equal(await evaluate('document.activeElement.id'),'closeModal');
+  await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true}))');
+  assert.equal(await evaluate('document.getElementById("courseModal").hidden'),true);
+  assert.equal(await evaluate('document.activeElement.closest("#bookingCourses")!==null'),true);
+ }
+ mkdirSync('.local/courses',{recursive:true});
+ await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+ for(const width of [320,375,390,430,768,1440]){
+  await viewport(width);await navigate('index.html');await wait('document.querySelectorAll("#bookingCourses button").length===2');
+  assert.equal(await evaluate('innerWidth'),width);
+  assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Course page overflow ${width}`);
+  assert.equal(await evaluate(`(()=>{const [a,b]=[...document.querySelectorAll('.course-hero-actions a')].map(x=>x.getBoundingClientRect());const c=document.querySelector('.hero-courses').getBoundingClientRect();return Math.abs(a.top-b.top)<1&&c.top>=a.bottom&&[...document.querySelectorAll('.course-hero-actions a')].every(x=>x.scrollWidth<=x.clientWidth)})()`),true,`Hero actions ${width}`);
+  for(const key of ['completo','tradicional']){
+   await evaluate(`document.querySelector('[data-course="${key}"]').click()`);
+   assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Modal overflow ${width}`);
+   assert.ok(await evaluate('document.querySelector(".modal-card").scrollWidth<=document.querySelector(".modal-card").clientWidth'),`Modal text overflow ${width}`);
+   assert.ok(await evaluate('document.querySelector(".modal-card").getBoundingClientRect().bottom<=innerHeight'),`Modal fits ${width}`);
+   const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(`.local/courses/${key}-${width}.png`,Buffer.from(shot.data,'base64'));
+   await evaluate('document.getElementById("backModal").click()');
+  }
+ }
+ await call('Emulation.setEmulatedMedia',{features:[]});
+ for(const id of ['closeModal','courseModal']){
+  await evaluate('document.querySelector("[data-course=completo]").click()');
+  await evaluate(`document.getElementById('${id}').click()`);
+  assert.equal(await evaluate('document.getElementById("courseModal").hidden'),true);
+ }
+ assert.equal(await evaluate('document.body.style.overflow'), '');
+ assert.equal(await evaluate('document.querySelector("main").inert'),false);
+ console.log('PASS independent offline courses, prices, durations, WhatsApp messages, Escape/back/close/backdrop, focus trap/return, six widths and hero button rows');
+
  mock=true;await navigate('index.html');await wait('window.NN?.serverToday');
- for(const width of [320,375,393,430,768,1440]){await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);}
+ for(const width of [320,375,390,430,768,1440]){await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);}
  for(const [i,service] of catalog.entries()){
   await evaluate(`document.querySelectorAll('#bookingServices button')[${i}].click()`);await wait('document.querySelector(".cal-day.open")');
   await evaluate('document.querySelector(".cal-day.open").click()');await wait('document.querySelector("#timeGrid button")');
@@ -89,6 +141,8 @@ try{
  await evaluate('document.querySelector(".nn-lb-nav.next").click()');assert.equal(await evaluate('document.getElementById("lightboxImage").getAnimations().some(a=>a.playState==="running")'),false);
  await call('Emulation.setEmulatedMedia',{features:[]});
  await evaluate('document.getElementById("closeLightbox").click()');
+ await evaluate('Promise.all([...document.querySelectorAll(".gallery-item img")].map(img=>{img.loading="eager";return img.decode()}))');
+ assert.equal(await evaluate('[...document.querySelectorAll(".gallery-item img")].every(img=>img.complete&&img.naturalWidth>0)'),true);
  mkdirSync('.local/screenshots',{recursive:true});await viewport(393);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync('.local/screenshots/mobile.png',Buffer.from(shot.data,'base64'));
  await navigate('admin.html');await evaluate('document.getElementById("email").value="test@example.invalid";document.getElementById("password").value="mock-password";document.getElementById("loginForm").requestSubmit()');await wait('!document.getElementById("workspace").hidden');await wait('document.querySelectorAll(".admin-stat").length===6');
  await wait('document.getElementById("adminStatus").textContent==="Agenda atualizada."');
@@ -98,7 +152,7 @@ try{
  slotRace=1;await evaluate('document.getElementById("slotService").dispatchEvent(new Event("change"));document.getElementById("slotService").dispatchEvent(new Event("change"))');
  await wait('document.getElementById("slots").textContent.includes("16:00")');await evaluate('new Promise(r=>setTimeout(r,220))');
  assert.ok(!(await evaluate('document.getElementById("slots").textContent')).includes('15:00'));slotRace=0;
- for(const width of [320,375,393,430,768,1440]){await viewport(width);for(const tab of ['agenda','services','hours','blocks']){await evaluate(`document.querySelector('[data-tab="${tab}"]').click()`);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Admin overflow ${width} ${tab}`);}}
+ for(const width of [320,375,390,430,768,1440]){await viewport(width);for(const tab of ['agenda','services','hours','blocks']){await evaluate(`document.querySelector('[data-tab="${tab}"]').click()`);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Admin overflow ${width} ${tab}`);}}
  await evaluate('document.getElementById("logout").click()');assert.equal(await evaluate('document.getElementById("workspace").hidden'),true);
  assert.deepEqual(errors,[]);console.log('PASS gallery, admin login/logout (mock), six indicators, six widths on all tabs, zero JS exceptions');
  console.log('Browser QA passed. Chromium emulation does not validate real iOS Safari.');

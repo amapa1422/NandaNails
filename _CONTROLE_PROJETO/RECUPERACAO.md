@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior aos cursos
+
+- Tag inédita: `backup-nandanails-antes-cursos`.
+- Commit: `c8cda5cb709711abc29e337e00623de0c3170bfc`, criado em 18/11/2026 para preservar a prévia recebida, única pendência inicial, sobre a base `d2e8fc350f967d3caead9cb6fc67f2698b57a609`.
+- Consulta: `git show --stat backup-nandanails-antes-cursos`.
+- Antes de recuperar, preservar alterações pendentes em commit revisado. Depois, em branch inédita: `git switch -c recuperacao-nandanails-antes-cursos backup-nandanails-antes-cursos`.
+- Recuperação remove os componentes de cursos nessa branch; não exige SQL, deploy de função ou qualquer alteração do Supabase. Não executar push/publicação. Entrega em [docs/CURSOS.md](../docs/CURSOS.md).
+
 ## Ponto anterior à atualização do favicon
 
 - Tag inédita: `backup-nandanails-antes-favicon`.
