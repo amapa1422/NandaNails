@@ -2,5 +2,5 @@
 window.NN_CONFIG = {
   supabaseUrl: 'https://fdxocuhgiypynsjxsqtm.supabase.co',
   // Preencher localmente com a Publishable key deste projeto; nunca Secret key.
-  publishableKey: ''
+  publishableKey: 'sb_publishable_tvlxHlgS0rk1Vin9h7XiVQ_wyMDCCom'
 };
