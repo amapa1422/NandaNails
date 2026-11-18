@@ -2,6 +2,12 @@
 
 Última atualização: 18/11/2026. Versão atual sem Turnstile ou qualquer CAPTCHA, conforme solicitação expressa do usuário. Ele informou migrations `001`/`002`/`003` já aplicadas e CLI vinculada. Nenhuma operação remota foi realizada pelo Codex nesta otimização; deploy/publicação continuam manuais e não autorizados para execução automática.
 
+## Favicon oficial — 18/11/2026
+
+Ícones criados exclusivamente a partir de `assets/nandanails-logo-original.jpg` (240 × 185), preservada byte a byte. Diretório versionado `assets/icons/n-v1/` contém ICO (16/32/48), PNGs 16/32/180/192/512 e manifest apenas com icons. `index.html` e `admin.html` receberam somente links no head, relativos e compatíveis com `/NandaNails/`. Desenho completo centralizado proporcionalmente em fundo compatível, sem recortar N/adornos ou modificar a logo do cabeçalho. Manifest não altera modo de abertura, navegação ou instalação. Gerador determinístico: `scripts/generate-favicons.ps1`; instruções e testes em [docs/FAVICONS.md](../docs/FAVICONS.md).
+
+Check, build, 23 testes Node, dimensões PNG, estrutura ICO, referências no subdiretório e pacote dist aprovados. Sem teste em iPhone físico. CSS, JavaScript de funcionamento, login, galeria e Supabase intactos. Antes desta etapa, alterações pendentes da correção anterior e a logo foram preservadas no commit local `e16d5c14d7545abb536aa2231f9b12297c568ac4`; tag inédita `backup-nandanails-antes-favicon`. Alteração de favicon pronta para novo commit, sem push ou publicação.
+
 ## Correção pontual do painel — SQLSTATE 42702 — 18/11/2026
 
 Preparada `supabase/migrations/202611180004_admin_action_alias.sql`, completa para execução manual no SQL Editor. Ainda não aplicada remotamente. Corrige somente o alias da consulta de serviços em `admin_action('list')`: `jsonb_agg(s)`/`services s` passa a `jsonb_agg(svc)`/`services as svc`. Corpo restante idêntico à última definição da `002`; nenhuma outra colisão encontrada nessa função. Preservados assinatura/default, SECURITY DEFINER, search_path vazio, proprietário, ACL, autenticação/autorização, consultas e operações. A guarda recusa banco sem a função existente. Migrations `001`/`002`/`003` intactas, sem reaplicação remota.

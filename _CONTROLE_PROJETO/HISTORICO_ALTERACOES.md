@@ -1,5 +1,17 @@
 # Histórico de alterações
 
+## 18/11/2026 — atualização exclusiva dos ícones do site
+
+- Fonte localizada e inspecionada: `assets/nandanails-logo-original.jpg`, 240 × 185 px, fornecida pelo usuário. Preservada integralmente; SHA-256 `4f85e548f98f9ef0d6f1f54e2495f990f5aca6afba3910ecffe4fc0bc501d905`.
+- Antes da edição, havia arquivos pendentes da correção administrativa anterior e a logo nova. Todos revisados e preservados em commit local `e16d5c14d7545abb536aa2231f9b12297c568ac4`; tag inédita `backup-nandanails-antes-favicon`. Sem descarte ou sobrescrita de referências; não houve push desse commit.
+- Criados seis ícones em `assets/icons/n-v1/`: favicon.ico (16/32/48), favicon-16x16.png, favicon-32x32.png, apple-touch-icon.png (180), icon-192.png e icon-512.png. Criado manifest.webmanifest com somente icons, sem display/start_url/scope/service worker. URLs versionadas no diretório evitam reutilizar os caminhos de ícones anteriores.
+- `index.html` e `admin.html`: somente cinco links de metadados no head, com caminhos relativos para hospedagem em `/NandaNails/`. Sem alterações do corpo, logo exibida, estilos ou funcionamento. Nenhum outro HTML modificado.
+- Criado `scripts/generate-favicons.ps1`: conversão determinística System.Drawing, preserva imagem inteira com escala proporcional e centralização; preenchimento simétrico pela cor de fundo da fonte evita cortar letra/adornos. PNGs maiores que 240 × 185 ampliam a fonte, sem criar novos detalhes. Sem IA ou dependências instaladas.
+- Documentação: `docs/FAVICONS.md`; atualizados estado, histórico e recuperação.
+- Validação: PNGs decodificados e dimensões corretas; ICO com três entradas/offsets/PNGs válidos; manifest JSON só com icons; referências das duas páginas e ícones do manifest existentes na origem/dist; URLs resolvidas em `/NandaNails/`; original preservado por hash; corpo/páginas preservados exceto novos links; CSS/JS/Supabase sem diff; `npm.cmd run check`, `npm.cmd run build`, `npm.cmd test` (23 aprovados) e `git diff --check` aprovados. Ícone Apple inspecionado visualmente.
+- Execuções iniciais do gerador: política PowerShell bloqueou chamada direta; execução com política apenas do processo resolveu. Overload de DrawImage ajustado para RectangleF compatível antes da geração final. Nenhuma alteração permanente da política.
+- Limites: sem navegador/iPhone físico nesta etapa; conferir abas, favoritos e novo atalho após publicação manual. Atalhos antigos do iOS podem precisar ser recriados para refletir a imagem. `dist/` atualizado só localmente; novo trabalho pronto para commit, sem push/publicação, SQL ou operação remota no Supabase.
+
 ## 18/11/2026 — correção pontual de admin_action / SQLSTATE 42702
 
 - Causa confirmada em PostgreSQL local: variável PL/pgSQL `s public.services` e alias `public.services s` tornam `jsonb_agg(s)` ambíguo na ação list. A última definição está na migration `002`; revisão das demais variáveis/aliases da mesma função não encontrou outra colisão.

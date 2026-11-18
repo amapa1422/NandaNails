@@ -1,5 +1,14 @@
 # Recuperação segura com Git
 
+## Ponto anterior à atualização do favicon
+
+- Tag inédita: `backup-nandanails-antes-favicon`.
+- Commit local: `e16d5c14d7545abb536aa2231f9b12297c568ac4`, criado em 18/11/2026 para preservar os arquivos pendentes da correção anterior e a logo original fornecida, antes de gerar os favicons.
+- Consulta: `git show --stat backup-nandanails-antes-favicon`.
+- Antes de recuperar, preservar o trabalho pendente em commit revisado. Depois: `git switch -c recuperacao-nandanails-antes-favicon backup-nandanails-antes-favicon`, escolhendo nome inédito.
+- Recuperar esta versão remove a configuração nova de ícones no checkout correspondente; não muda Supabase nem desfaz SQL. Não executar migrations, push ou publicação durante a recuperação. Fonte original permanece na tag.
+- Ícones e gerador documentados em [docs/FAVICONS.md](../docs/FAVICONS.md). O favicon atual permanece local, pronto para novo commit e publicação manual futura.
+
 ## Ponto anterior à correção admin_action / 42702
 
 - Tag inédita: `backup-nandanails-antes-admin-42702`.
