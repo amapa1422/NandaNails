@@ -224,3 +224,98 @@ dialog{background:var(--paper);color:var(--ink);border:1px solid var(--line);bor
 .admin-small a{text-decoration:underline;text-underline-offset:3px}.admin-card h1{font-size:32px}
 @media(max-width:400px){.admin-form{grid-template-columns:1fr}.admin-stats{grid-template-columns:1fr 1fr}.booking-summary{font-size:12px}.admin-topbar{padding-inline:12px}.admin-topbar .brand strong{font-size:17px}.admin-nav a{padding:10px}.admin-wrap{padding-inline:12px}.admin-card{padding:17px}}
 @media(prefers-reduced-motion:reduce){.nn-toast,.lightbox,.lightbox img,.panel,.success-check:before,.success-check path,.cal-days,.time,.choice{animation:none!important;transition:none!important}.success-check path{stroke-dashoffset:0!important}}
+
+/* Cursos: componentes da prévia aprovada, isolados da agenda e do painel. */
+:is(#cursos,#courseModal) .btn{background:linear-gradient(135deg,#c26a8b,#893953);color:white;border:1px solid #db91ae;border-radius:50px;padding:14px 24px;display:inline-flex;align-items:center;justify-content:center;gap:22px;font-size:13px;font-weight:700;min-height:48px;transition:transform .22s,filter .22s}
+:is(#cursos,#courseModal) .btn:hover{transform:translateY(-2px);filter:brightness(1.12)}
+:is(#cursos,#courseModal) .btn.outline{background:transparent;border-color:#856070}
+:is(#cursos,#courseModal) .section{width:min(var(--max),calc(100% - 42px));margin:auto;padding:78px 0}
+:is(#cursos,#courseModal) .eyebrow{font-size:11px;letter-spacing:.19em;font-weight:700;color:var(--gold)}
+#bookingCourses .choices{display:grid;gap:14px}
+#bookingCourses .choice{width:100%;display:flex;align-items:center;gap:16px;background:#30202a;border:1px solid #755064;padding:17px 19px;border-radius:18px;text-align:left;color:#fff1ef;min-height:84px;transition:transform .2s,border-color .2s,background .2s}
+#bookingCourses .choice:hover{transform:translateY(-2px);border-color:#d18fa7;background:#392430}
+#bookingCourses .choice-icon{width:52px;height:52px;border-radius:14px;flex-shrink:0;display:grid;place-items:center;background:#553040;color:#eab2a1}
+#bookingCourses .choice-copy{min-width:0;flex:1}
+#bookingCourses .choice-copy strong{display:block;font-size:15px;margin-bottom:4px}
+#bookingCourses .choice-copy small{font-size:12px;color:#c6aeb7}
+#bookingCourses .choice-arrow{color:#e0b0bf;font-size:23px}
+#bookingCourses .course-choice{border-color:#a56d7c;background:linear-gradient(120deg,#442433,#30202a)}
+#bookingCourses .course-choice .choice-icon{background:#744154;color:#ffe0c8}
+#bookingCourses .course-choice small{color:#f2bfc9}
+#bookingCourses .course-tag{font-size:10px;letter-spacing:.12em;color:#f5d8a6;font-weight:700;display:block;margin-bottom:4px}
+:is(#cursos,#courseModal) .panel-note{font-size:11px;color:#bb9aa7;margin:19px 0 0;line-height:1.65}
+:is(#cursos,#courseModal) .section-head{margin-bottom:28px}
+:is(#cursos,#courseModal) .section-head h2{font-size:clamp(36px,4vw,57px);line-height:1.2;margin:12px 0 0}
+#cursos{background:#1b1018;scroll-margin-top:20px}
+:is(#cursos,#courseModal) .course-intro{display:flex;justify-content:space-between;gap:40px;align-items:end}
+:is(#cursos,#courseModal) .course-intro p{max-width:390px;font-size:13px;color:var(--muted);line-height:1.8}
+:is(#cursos,#courseModal) .course-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+:is(#cursos,#courseModal) .course-card{padding:30px;border-radius:23px;background:linear-gradient(150deg,#36212d,#25151f);border:1px solid #765062;display:flex;flex-direction:column;gap:0;min-height:440px;transition:border-color .2s,transform .2s}
+:is(#cursos,#courseModal) .course-card:hover{border-color:#c4899c;transform:translateY(-3px)}
+:is(#cursos,#courseModal) .course-card.featured{border-color:#bd8292;background:linear-gradient(150deg,#442635,#291823)}
+:is(#cursos,#courseModal) .course-top{display:flex;align-items:center;justify-content:space-between;color:#d6ac97}
+:is(#cursos,#courseModal) .course-top .num{font:italic 28px 'Playfair Display',serif}
+:is(#cursos,#courseModal) .pill{font-size:10px;font-weight:700;letter-spacing:.08em;padding:9px 12px;border-radius:30px;background:#ffffff13;border:1px solid #946b7c}
+:is(#cursos,#courseModal) .course-card h3{font-size:clamp(28px,3.3vw,42px);margin:24px 0 12px}
+:is(#cursos,#courseModal) .course-card .desc{color:#d8bec7;line-height:1.7;font-size:13px}
+:is(#cursos,#courseModal) .course-details{display:grid;gap:14px;margin:20px 0 25px;padding:0;list-style:none}
+:is(#cursos,#courseModal) .course-details li{display:flex;gap:12px;align-items:flex-start;font-size:13px;color:#eddae0;line-height:1.55}
+:is(#cursos,#courseModal) .course-details li:before{content:'✓';font-weight:700;color:#e5ac94}
+:is(#cursos,#courseModal) .course-bottom{margin-top:auto;padding-top:20px;border-top:1px solid #694756;display:flex;justify-content:space-between;align-items:center;gap:10px}
+:is(#cursos,#courseModal) .price{font:600 30px 'Playfair Display',serif}
+:is(#cursos,#courseModal) .payment{font-size:11px;line-height:1.55;color:#cbb0b9;margin-top:5px}
+:is(#cursos,#courseModal) .course-card .btn{padding-inline:18px;white-space:nowrap}
+#courseModal[hidden]{display:none}
+#courseModal{position:fixed;inset:0;background:#0b060bd9;z-index:20;display:grid;place-items:center;padding:18px}
+#courseModal .modal-card{background:#291823;border:1px solid #a97689;border-radius:25px;padding:30px;width:min(570px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 24px 90px #0009}
+#courseModal .modal-head{display:flex;justify-content:space-between;gap:20px;align-items:start}
+#courseModal h2{font-size:37px;margin:12px 0}
+#courseModal .modal-close{font-size:25px;color:#f0ccd7;border:1px solid #694956;background:#ffffff12;border-radius:12px;padding:5px 13px}
+#courseModal p{font-size:13px;line-height:1.8;color:#cbb4bd}
+#courseModal .modal-list{list-style:none;padding:0;display:grid;gap:12px;color:#edccd7;font-size:13px}
+#courseModal .modal-list li:before{content:'✓';color:#e1ab8c;margin-right:10px}
+#courseModal .modal-note{border-top:1px solid #634553;padding-top:15px}
+#courseModal .modal-actions{margin-top:25px;display:flex;flex-wrap:wrap;gap:10px}
+#courseModal .modal-actions .btn{flex:1}
+:is(#cursos,#courseModal) .demo-warning{background:#36232c;border:1px solid #85596a;color:#d9b8c2;font-size:11px;padding:12px 15px;border-radius:14px;margin:15px 0 0;line-height:1.6}
+@media(max-width:800px){
+:is(#cursos,#courseModal) .course-intro{display:block}
+:is(#cursos,#courseModal) .course-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+#bookingCourses .choice{min-height:76px;padding:13px 13px;gap:12px}
+#bookingCourses .choice-icon{height:45px;width:45px;border-radius:12px}
+#bookingCourses .choice-copy strong{font-size:13px}
+#bookingCourses .choice-copy small{font-size:11px}
+:is(#cursos,#courseModal) .section{width:calc(100% - 38px);padding:66px 0}
+:is(#cursos,#courseModal) .course-card{padding:24px;min-height:auto}
+:is(#cursos,#courseModal) .course-card h3{font-size:32px}
+:is(#cursos,#courseModal) .course-bottom{align-items:flex-start;flex-direction:column}
+:is(#cursos,#courseModal) .course-bottom .btn{width:100%}
+:is(#cursos,#courseModal) .section-head h2{font-size:38px}
+#courseModal .modal-card{padding:23px}
+#courseModal h2{font-size:30px}
+}
+:is(#cursos,#courseModal,#bookingCourses){--max:1160px;--gold:#ddb18d;--muted:#c1a8b4;color:#fff0ef;font-family:'DM Sans',system-ui,sans-serif}
+:is(#cursos,#courseModal) :is(h2,h3){font-family:'Playfair Display',Georgia,serif;letter-spacing:-.035em;font-weight:700}
+:is(#cursos,#courseModal) :is(h2,h3,p){margin-top:0}
+#cursos h2 em{color:#f3a7bd;font-weight:500}
+:is(#cursos,#courseModal,#bookingCourses) svg{vertical-align:middle;flex-shrink:0}
+:is(#cursos,#courseModal) .btn{box-shadow:none}
+#cursos .course-details li:before,#courseModal .modal-list li:before{content:'';width:14px;height:14px;flex-shrink:0;display:inline-block;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.5' d='m5 12 4 4L19 6'/%3E%3C/svg%3E") center/contain no-repeat}
+#bookingCourses{display:grid;gap:14px;margin-top:14px}
+#bookingCourses .choice-copy strong{margin-top:0}
+#courseModal{z-index:110}
+#courseModal .modal-card{overscroll-behavior:contain;max-height:90dvh}
+#courseModal .modal-close{min-width:44px;min-height:44px;display:grid;place-items:center}
+.hero .course-hero-actions{display:flex;align-items:stretch;flex-wrap:nowrap;width:100%;gap:24px}
+.hero .course-hero-actions .btn{background:linear-gradient(135deg,#c26a8b,#893953);border:1px solid #db91ae;color:white;border-radius:50px;padding:14px 24px;min-height:48px;gap:22px;box-shadow:none;font-size:13px}
+.hero .course-hero-actions .btn span{margin-left:0}
+.hero .course-hero-actions .btn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+.hero .hero-courses{display:inline-flex;align-items:center;gap:11px;margin-top:22px;border:1px solid #9d6f84;border-radius:30px;padding:12px 17px;color:#f6c7d7;background:#341f2b;font-size:13px;font-weight:700;transition:background .2s}
+.hero .hero-courses:hover{background:#503040}
+:is(#cursos,#courseModal) .btn:active,.hero .course-hero-actions .btn:active{transform:scale(.978)}
+@media(min-width:801px) and (max-width:1200px){.hero .course-hero-actions{gap:10px}.hero .course-hero-actions .btn{padding-inline:12px;gap:8px;font-size:12px}}
+@media(max-width:480px){.hero .course-hero-actions{gap:10px}.hero .course-hero-actions .btn{flex:1;min-width:0;padding:12px 9px;gap:7px;font-size:12px}.hero .course-hero-actions .btn svg{width:16px;height:16px}.hero .hero-courses{margin-top:18px}}
+@media(max-width:360px){.hero .course-hero-actions{gap:8px}.hero .course-hero-actions .btn{font-size:11px;padding-inline:6px;gap:4px}}
+@media(prefers-reduced-motion:reduce){:is(#cursos,#courseModal,#bookingCourses) *,.hero .hero-courses{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
