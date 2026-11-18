@@ -1,5 +1,14 @@
 # Recuperação segura com Git
 
+## Ponto anterior à correção admin_action / 42702
+
+- Tag inédita: `backup-nandanails-antes-admin-42702`.
+- Commit: `5cb39200968ce6770667e87a354acd6277fe84d3`, árvore limpa em 18/11/2026; inclui o trabalho de performance já commitado pelo usuário antes desta etapa.
+- Consulta: `git show --stat backup-nandanails-antes-admin-42702`.
+- Antes de recuperar, preservar alterações locais em commit revisado. Depois, usar branch nova: `git switch -c recuperacao-nandanails-antes-admin-42702 backup-nandanails-antes-admin-42702`, com nome inédito.
+- A migration `004` foi preparada e testada apenas localmente, sem execução remota pelo Codex. Recuperar Git não desfaz SQL aplicado manualmente depois; não voltar à função ambígua em produção nem reaplicar `001`/`002`/`003`. Se houver necessidade de compensação futura, criar outra migration revisada e autorizada.
+- Guia: [docs/CORRECAO_ADMIN_42702.md](../docs/CORRECAO_ADMIN_42702.md).
+
 ## Ponto anterior à otimização de performance
 
 - Tag inédita: `backup-nandanails-antes-performance`.

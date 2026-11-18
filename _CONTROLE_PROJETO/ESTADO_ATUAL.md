@@ -2,6 +2,12 @@
 
 Última atualização: 18/11/2026. Versão atual sem Turnstile ou qualquer CAPTCHA, conforme solicitação expressa do usuário. Ele informou migrations `001`/`002`/`003` já aplicadas e CLI vinculada. Nenhuma operação remota foi realizada pelo Codex nesta otimização; deploy/publicação continuam manuais e não autorizados para execução automática.
 
+## Correção pontual do painel — SQLSTATE 42702 — 18/11/2026
+
+Preparada `supabase/migrations/202611180004_admin_action_alias.sql`, completa para execução manual no SQL Editor. Ainda não aplicada remotamente. Corrige somente o alias da consulta de serviços em `admin_action('list')`: `jsonb_agg(s)`/`services s` passa a `jsonb_agg(svc)`/`services as svc`. Corpo restante idêntico à última definição da `002`; nenhuma outra colisão encontrada nessa função. Preservados assinatura/default, SECURITY DEFINER, search_path vazio, proprietário, ACL, autenticação/autorização, consultas e operações. A guarda recusa banco sem a função existente. Migrations `001`/`002`/`003` intactas, sem reaplicação remota.
+
+Regressão em PostgreSQL local reproduziu `42702` antes e retornou list corretamente depois; verificou dados, proprietário/permissões e bloqueio de não autorizados, além das demais ações. Novo teste `tests/admin_action.py` e teste estático `tests/admin-action.test.mjs`. O teste de instalação aplica a incremental após o consolidado histórico em bancos locais novos. Guia e confirmação no painel: [docs/CORRECAO_ADMIN_42702.md](../docs/CORRECAO_ADMIN_42702.md). Esta entrega não exige publicar frontend ou Edge Functions. Base limpa `5cb39200968ce6770667e87a354acd6277fe84d3`, tag `backup-nandanails-antes-admin-42702`. Sem push ou operações no Supabase remoto.
+
 ## Otimização local de performance — 18/11/2026
 
 Frontend otimizado em `js/api.js`, `booking.js`, `animations.js`, `experience.js` e `admin.js`. Reutiliza formatadores Intl, agrupa apenas consultas públicas simultâneas (sem cache de respostas concluídas), usa Set/DocumentFragment no calendário e preserva fotos existentes ao expandir a galeria. Preparação de revelações separa leituras/escritas; transições do calendário/fotos dispensam offsetWidth. Painel evita consulta semanal repetida quando já tem o mesmo intervalo e ignora respostas antigas. Timeout de 20 s usa AbortController com limpeza de timer, sem depender de AbortSignal.timeout.

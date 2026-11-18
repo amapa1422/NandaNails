@@ -1,5 +1,23 @@
 # Histórico de alterações
 
+## 18/11/2026 — correção pontual de admin_action / SQLSTATE 42702
+
+- Causa confirmada em PostgreSQL local: variável PL/pgSQL `s public.services` e alias `public.services s` tornam `jsonb_agg(s)` ambíguo na ação list. A última definição está na migration `002`; revisão das demais variáveis/aliases da mesma função não encontrou outra colisão.
+- Base limpa: `5cb39200968ce6770667e87a354acd6277fe84d3`. O trabalho anterior de performance já estava commitado ao iniciar esta etapa. Tag inédita `backup-nandanails-antes-admin-42702` criada antes da edição, com aprovação do ambiente para escrever `.git`, sem substituir referências.
+- Criada `supabase/migrations/202611180004_admin_action_alias.sql`: transação, guarda para exigir função existente e CREATE OR REPLACE completo com assinatura/default originais, SECURITY DEFINER e search_path vazio. A única mudança no corpo é `jsonb_agg(svc) from public.services as svc`; não foram alteradas autenticação, autorização, ações, consultas, locks, validações ou auditoria. Sem alteração de owner/grants. Não chama os ramos de escrita nem modifica linhas de dados.
+- Criados `tests/admin_action.py` (PostgreSQL real local) e `tests/admin-action.test.mjs` (compara corpo inteiro com a definição da 002, permitindo somente o alias). Alterado `tests/installation.py` em três linhas para aplicar a nova incremental após o instalador histórico em banco novo e manter a comparação com a cadeia completa. O consolidado e migrations `001`/`002`/`003` ficaram intactos.
+- Criado `docs/CORRECAO_ADMIN_42702.md` com arquivo SQL completo vinculado, escopo, segurança, aplicação manual e confirmação via sessão do painel. Atualizados estado, histórico e recuperação. AGENTS, frontend, login e visual não precisaram mudar.
+- Testes executados e aprovados:
+  - `python -u tests/admin_action.py`: **5 grupos**. Reproduz SQLSTATE 42702 com administradora autorizada e resolução de conflitos em error; testa guarda sem função; verifica list após correção, quatro seções e dados privados disponíveis somente à administradora; compara todas as linhas relevantes, OID, owner, ACL, argumento padrão, SECURITY DEFINER e search_path; execução repetida preserva dados; anon/PUBLIC sem EXECUTE e não autorizados/sem identidade recebem 42501; exercita slots, status, remarcação, serviço, bloqueio/desbloqueio, expediente e auditoria com fixtures locais.
+  - `python -u tests/security.py`: **5 grupos**; usa cadeia atual incluindo 004, verifica RLS, grants, cotas, concorrência, horários e integridade referencial. O grupo de replay é do objeto histórico preservado, não reintroduz CAPTCHA.
+  - `python -u tests/installation.py`: **6 grupos**; equivalência do consolidado histórico seguido da 004 com a cadeia completa, seed, preservação, grants e concorrência.
+  - `python -u tests/schedule.py`: **8 grupos** de regressão da política de horários e histórico 001/002 em instalações descartáveis.
+  - `python -u tests/database.py`: **10 grupos** de regressão da base histórica em banco descartável.
+  - `npm.cmd test`: **23 testes** aprovados, incluindo o novo teste de equivalência estrita da função.
+  - `npm.cmd run check` e `git diff --check`: aprovados. Verificação Git confirma migrations antigas, SQLs históricos, HTML/CSS, JS e imagens sem alteração nesta etapa.
+- Ambiente: PostgreSQL apenas em `127.0.0.1:55432`, bancos dedicados de teste e Auth simulado. A inicialização do cluster exigiu aprovação do ambiente após a execução restrita falhar; iniciada localmente com sucesso, sem acesso externo. Aplicação de migrations antigas ocorreu somente na montagem desses bancos novos, nunca em produção.
+- Limites: não consultamos ou alteramos Supabase remoto; SQL pronto, mas correção ainda não aplicada remotamente pelo Codex. Não houve push, publicação, alteração de credenciais/serviços/preços ou agendamentos reais. Sem teste de navegador nesta etapa: mocks não comprovariam a correção PostgreSQL; a confirmação remota deve ser feita pelo usuário após executar somente a 004 no SQL Editor. Não precisa deploy de frontend ou Edge Function.
+
 ## 18/11/2026 — auditoria e otimização local de performance
 
 - Pedido: preservar exatamente o site e otimizar o frontend, priorizando fluidez móvel, sem operações remotas, redesign ou mudanças de regras. Usuário informou CORS corrigido e função booking publicada; não se refez a integração.

@@ -36,6 +36,9 @@ def signature():
 setup('nandanails_install_test')
 db.sql(Path('supabase/sql-editor/000_verificar_estrutura.sql').read_text(encoding='utf-8'))
 db.sql(initial)
+# The consolidated SQL remains the historical 001/002/003 installer.
+# Apply the same incremental fix afterward as on an existing installation.
+db.sql(Path('supabase/migrations/202611180004_admin_action_alias.sql').read_text(encoding='utf-8'))
 full_signature=signature()
 db.sql(Path('supabase/sql-editor/002_conferir_instalacao.sql').read_text(encoding='utf-8'))
 assert db.sql('select count(*) from public.services;')=='5'
