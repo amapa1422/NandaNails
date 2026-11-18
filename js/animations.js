@@ -5,7 +5,11 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   const header = document.querySelector('.topbar');
   const booking = document.querySelector('.booking-card');
-  const updateHeader = () => header?.classList.toggle('nn-scrolled', window.scrollY > 24);
+  let scrolled;
+  const updateHeader = () => {
+    const next=window.scrollY>24;
+    if(next!==scrolled){header?.classList.toggle('nn-scrolled',next);scrolled=next;}
+  };
   addEventListener('scroll', updateHeader, {passive:true});
   updateHeader();
 
@@ -25,15 +29,6 @@
 
   if(reduce.matches || !('IntersectionObserver' in window)) return;
   let observer;
-  const reveal = element => {
-    if(!element || element.dataset.nnObserved === '1') return;
-    element.dataset.nnObserved='1';
-    // Elementos destacados no viewport inicial não precisam ficar ocultos.
-    if(element.getBoundingClientRect().top < innerHeight * .89) {
-      element.classList.add('nn-inview');
-    }
-    observer.observe(element);
-  };
   observer = new IntersectionObserver(entries => {
     for(const entry of entries){
       if(entry.isIntersecting){
@@ -44,25 +39,31 @@
   },{threshold:.08,rootMargin:'0px 0px -28px 0px'});
 
   const prepare = () => {
-    document.querySelectorAll('.hero-text h1,.hero-actions,.booking-copy h2,.section-heading,.intro-strip,.closing,.gallery-more').forEach(el=>{
-      el.classList.add('nn-reveal');reveal(el);
+    const items=[];
+    const collect=(selector,className,stagger=false)=>document.querySelectorAll(selector).forEach((el,i)=>{
+      if(el.dataset.nnObserved!=='1')items.push({el,className,delay:stagger?`${i%4*55}ms`:null});
     });
-    document.querySelectorAll('.hero-visual').forEach(el=>{
-      el.classList.add('nn-photo-reveal');reveal(el);
-    });
-    document.querySelectorAll('.services-grid .service-card,.gallery-grid .gallery-item').forEach((el,i)=>{
-      el.classList.add('nn-reveal');
-      el.style.setProperty('--nn-delay',`${Math.min(i%4,3)*55}ms`);
-      reveal(el);
-    });
+    collect('.hero-text h1,.hero-actions,.booking-copy h2,.section-heading,.intro-strip,.closing,.gallery-more','nn-reveal');
+    collect('.hero-visual','nn-photo-reveal');
+    collect('.services-grid .service-card,.gallery-grid .gallery-item','nn-reveal',true);
+    // Read all bounds before changing classes/styles: one layout, no read/write loop.
+    for(const item of items)item.visible=item.el.getBoundingClientRect().top<innerHeight*.89;
+    for(const {el,className,delay,visible} of items){
+      el.dataset.nnObserved='1';el.classList.add(className);
+      if(delay!==null)el.style.setProperty('--nn-delay',delay);
+      if(visible)el.classList.add('nn-inview');else observer.observe(el);
+    }
   };
   prepare();
   document.documentElement.classList.add('nn-motion-ready');
   // Serviços/fotos podem ser atualizados por JS: observar só adições, sem loops por atributos.
   const grids = [document.getElementById('servicesGrid'),document.getElementById('galleryGrid')].filter(Boolean);
+  let scheduled=false;
   for(const grid of grids){
     new MutationObserver(mutations=>{
-      if(mutations.some(m=>m.addedNodes.length)) requestAnimationFrame(prepare);
+      if(!scheduled&&mutations.some(m=>m.addedNodes.length)){
+        scheduled=true;requestAnimationFrame(()=>{scheduled=false;prepare();});
+      }
     }).observe(grid,{childList:true});
   }
 })();

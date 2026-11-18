@@ -3,12 +3,13 @@
 const L=window.Lumiere,by=id=>document.getElementById(id),cfg=()=>L.getConfig();
 let serviceId='',date='',time='',month=L.dayFromKey((L.serverToday||new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo'}).format(new Date())).slice(0,7)+'-01'),stage=1;
 const allPhotos=["assets/479393e9cb86bde5.jpg", "assets/6c4c9fbb901a262f.jpg", "assets/f729aae6daed3b2f.jpg", "assets/6302e80d435a8012.jpg", "assets/2f6e8e69b1a5c70f.jpg", "assets/55cf3867307e8da8.jpg", "assets/848a38ffed5390f8.jpg", "assets/3d5fd52cda10621c.jpg", "assets/8db060d1d75da3c0.jpg", "assets/3dd50a15712d7441.jpg"];
-function renderServices(){const services=cfg().services.filter(s=>s.active);by('servicesGrid').replaceChildren();by('bookingServices').replaceChildren();services.forEach((s,i)=>{
+function renderServices(){const services=cfg().services.filter(s=>s.active),cards=document.createDocumentFragment(),choices=document.createDocumentFragment();services.forEach((s,i)=>{
  const card=document.createElement('article');card.className='service-card';card.innerHTML=`<span class="service-num">0${i+1} / <svg class="nn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7c-2-6-7-4-5 1-5-2-7 3-1 5-5 2-2 7 3 5 2 5 7 2 5-3 6 1 7-5 1-6 2-5-3-7-5-2Z"/><circle cx="12" cy="12" r="2"/></svg></span><h3>${L.escape(s.name)}</h3><p>${L.escape(s.description)}</p><div class="service-bottom"><span>${L.formatPrice(s.price)}</span><span><svg class="nn-icon nn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></span></div>`;
- card.addEventListener('click',()=>selectService(s.id));card.style.cursor='pointer';by('servicesGrid').append(card);
+ card.addEventListener('click',()=>selectService(s.id));card.style.cursor='pointer';cards.append(card);
  const button=document.createElement('button');button.type='button';button.className='choice';button.innerHTML=`<span class="choice-icon"><svg class="nn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="18" rx="4"/><path d="M8 10h8"/></svg></span><span class="choice-main"><strong>${L.escape(s.name)}</strong><small>${L.escape(s.minutes)} min · ${L.formatPrice(s.price)}</small></span><span class="choice-arrow"><svg class="nn-icon nn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>`;
- button.dataset.id=s.id;button.addEventListener('click',()=>selectService(s.id));by('bookingServices').append(button);
+ button.dataset.id=s.id;button.addEventListener('click',()=>selectService(s.id));choices.append(button);
  });
+ by('servicesGrid').replaceChildren(cards);by('bookingServices').replaceChildren(choices);
  if(!services.length){by('bookingServices').textContent='A profissional ainda não cadastrou serviços.';by('servicesGrid').textContent='Serviços em atualização.';}
 }
 function selectService(id){if(!L.configured||!L.serverToday){window.nnNotice('Agenda online indisponível no momento.');return;}serviceId=id;date='';time='';month=L.dayFromKey((L.serverToday||new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo'}).format(new Date())).slice(0,7)+'-01');showStage(2);by('agendar').scrollIntoView({behavior:'smooth',block:'start'});}
@@ -26,14 +27,15 @@ async function renderCalendar(){
   const from=L.dayKey(month),end=new Date(month.getFullYear(),month.getMonth()+1,0,12);
   const data=await L.availability(selectedService,from,L.dayKey(end));
   if(version!==availabilityVersion||stage!==2)return;
-  host.replaceChildren();
-  for(let i=0;i<month.getDay();i++){const blank=document.createElement('span');blank.className='cal-day blank';host.append(blank);}
+  const days=document.createDocumentFragment(),openDates=new Set(data.slots.map(s=>s.date));
+  for(let i=0;i<month.getDay();i++){const blank=document.createElement('span');blank.className='cal-day blank';days.append(blank);}
   for(let d=1;d<=end.getDate();d++){
-   const key=L.dayKey(new Date(month.getFullYear(),month.getMonth(),d,12)),open=data.slots.some(s=>s.date===key),b=document.createElement('button');
+   const key=L.dayKey(new Date(month.getFullYear(),month.getMonth(),d,12)),open=openDates.has(key),b=document.createElement('button');
    b.type='button';b.className='cal-day'+(open?' open dot':'')+(key===date?' selected':'')+(key===today?' today':'');b.textContent=d;b.disabled=!open;
    b.title=(open?'Ver horários de ':'Indisponível: ')+L.displayDate(key);b.setAttribute('aria-label',b.title);
-   b.onclick=()=>{date=key;time='';showStage(3);};host.append(b);
+   b.onclick=()=>{date=key;time='';showStage(3);};days.append(b);
   }
+  host.replaceChildren(days);
  }catch(e){if(version===availabilityVersion){host.textContent='Não foi possível consultar a agenda.';window.nnNotice(e.message);}}
  finally{if(version===availabilityVersion)host.setAttribute('aria-busy','false');}
 }
@@ -46,7 +48,9 @@ async function renderTimes(){
   if(version!==availabilityVersion||stage!==3)return;
   host.replaceChildren();
   if(!data.slots.length){host.textContent='Este dia ficou sem horários. Volte e escolha outra data.';return;}
-  for(const slot of data.slots){const b=document.createElement('button');b.className='time';b.type='button';b.textContent=slot.time;b.onclick=()=>{time=slot.time;showStage(4);};host.append(b);}
+  const times=document.createDocumentFragment();
+  for(const slot of data.slots){const b=document.createElement('button');b.className='time';b.type='button';b.textContent=slot.time;b.onclick=()=>{time=slot.time;showStage(4);};times.append(b);}
+  host.replaceChildren(times);
  }catch(e){if(version===availabilityVersion)host.textContent='Não foi possível atualizar os horários. Volte e tente novamente.';}
  finally{if(version===availabilityVersion)host.setAttribute('aria-busy','false');}
 }
@@ -74,7 +78,7 @@ by('bookingForm').addEventListener('submit',async e=>{
  finally{submitting=false;button.disabled=false;button.textContent='Confirmar horário';}
 });
 by('anotherBooking').addEventListener('click',()=>{serviceId='';date='';time='';showStage(1)});document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showStage(Number(b.dataset.back)));by('prevMonth').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()-1,1);renderCalendar()};by('nextMonth').onclick=()=>{month=new Date(month.getFullYear(),month.getMonth()+1,1);renderCalendar()};
-const gallery=by('galleryGrid');function renderGallery(showAll=false){gallery.replaceChildren();allPhotos.slice(0,showAll?allPhotos.length:8).forEach((src,i)=>{const b=document.createElement('button');b.className='gallery-item';b.type='button';b.setAttribute('aria-label','Ampliar foto '+(i+1));const img=document.createElement('img');img.src=src;img.alt='Inspiração de unhas '+(i+1);img.loading='lazy';img.decoding='async';b.append(img);b.onclick=()=>{by('lightboxImage').src=src;by('lightbox').hidden=false;document.body.style.overflow='hidden'};gallery.append(b)});by('galleryMore').hidden=showAll;}
+const gallery=by('galleryGrid');function renderGallery(showAll=false){const start=gallery.children.length,photos=document.createDocumentFragment();allPhotos.slice(start,showAll?allPhotos.length:8).forEach((src,index)=>{const i=start+index;const b=document.createElement('button');b.className='gallery-item';b.type='button';b.setAttribute('aria-label','Ampliar foto '+(i+1));const img=document.createElement('img');img.src=src;img.alt='Inspiração de unhas '+(i+1);img.loading='lazy';img.decoding='async';b.append(img);b.onclick=()=>{by('lightboxImage').src=src;by('lightbox').hidden=false;document.body.style.overflow='hidden'};photos.append(b)});gallery.append(photos);by('galleryMore').hidden=showAll;}
 function closeLightbox(){by('lightbox').hidden=true;document.body.style.overflow=''}by('galleryMore').onclick=()=>renderGallery(true);by('closeLightbox').onclick=closeLightbox;by('lightbox').addEventListener('click',e=>{if(e.target===by('lightbox'))closeLightbox()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightbox()});
 renderServices();renderGallery();
 const status=by('connectionStatus');

@@ -6,7 +6,7 @@ const targets=await(await fetch('http://127.0.0.1:9223/json')).json();
 const target=targets.find(x=>x.type==='page');
 if(!target)throw Error('No disposable browser target');
 const ws=new WebSocket(target.webSocketDebuggerUrl);await new Promise(r=>ws.onopen=r);
-let seq=0;const pending=new Map(),errors=[];let mock=false,bookings=0,bookingResult='valid';
+let seq=0;const pending=new Map(),errors=[];let mock=false,bookings=0,bookingResult='valid',availabilityFails=false,adminLists=0,slotRace=0;
 function call(method,params={}){return new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});}
 const catalog=[['molde-f1','Alongamento Molde F1',120,9000],['esmaltacao-gel','Esmaltação em Gel',60,7000],['esmaltacao-gel-pe','Esmaltação em Gel no Pé',60,6000],['manutencao-alongamento','Manutenção de Alongamento',90,6500],['remocao','Remoção',30,1500]].map(([id,name,duration_minutes,price_cents])=>({id,name,duration_minutes,price_cents,description:'Procedimento original',active:true}));
 let day='2026-11-20';
@@ -14,9 +14,11 @@ ws.onmessage=async event=>{const m=JSON.parse(event.data);if(m.id){const p=pendi
  if(m.method==='Runtime.exceptionThrown')errors.push(m.params.exceptionDetails.text+': '+m.params.exceptionDetails.exception?.description);
  if(m.method==='Fetch.requestPaused'){
   const {requestId,request}=m.params;let body,contentType='application/json';
-  if(mock&&request.url.endsWith('/js/config.js')){contentType='application/javascript';body=`window.NN_CONFIG={supabaseUrl:'http://127.0.0.1:4173',publishableKey:'mock'};`;}
+  if(request.url.endsWith('/js/config.js')){contentType='application/javascript';body=`window.NN_CONFIG=${JSON.stringify(mock?{supabaseUrl:'http://127.0.0.1:4173',publishableKey:'mock'}:{supabaseUrl:'',publishableKey:''})};`;}
+  else if(!request.url.startsWith('http://127.0.0.1:4173/')){await call('Fetch.failRequest',{requestId,errorReason:'BlockedByClient'});return;}
   else if(request.url.includes('challenges.cloudflare.com')){errors.push('Unexpected CAPTCHA dependency');await call('Fetch.failRequest',{requestId,errorReason:'BlockedByClient'});return;}
   else if(request.url.endsWith('/functions/v1/booking')){const data=JSON.parse(request.postData);
+   if(data.action==='availability'&&availabilityFails){await call('Fetch.fulfillRequest',{requestId,responseCode:503,responseHeaders:[{name:'Content-Type',value:'application/json'}],body:Buffer.from(JSON.stringify({error:'Falha de rede simulada'})).toString('base64')});return;}
    if(data.action==='catalog')body=JSON.stringify({today:'2026-11-17',services:catalog});
    if(data.action==='availability'){
     const slots=[],duration=catalog.find(s=>s.id===data.serviceId).duration_minutes;
@@ -31,7 +33,9 @@ ws.onmessage=async event=>{const m=JSON.parse(event.data);if(m.id){const p=pendi
   } else if(request.url.includes('/auth/v1/token'))body=JSON.stringify({access_token:'mock-jwt',refresh_token:'mock-refresh',expires_in:3600});
   else if(request.url.endsWith('/rest/v1/rpc/is_admin'))body='true';
   else if(request.url.endsWith('/rest/v1/rpc/admin_action')){
-   const data=JSON.parse(request.postData);body=JSON.stringify(data.p_action==='slots'?{slots:[{date:day,time:'14:00'}]}:{appointments:[],services:catalog,availability:[{weekday:1,opens:'09:00:00',closes:'18:00:00',active:true}],blocks:[]});
+   const data=JSON.parse(request.postData);if(data.p_action==='list')adminLists++;
+   let slotTime='14:00';if(data.p_action==='slots'&&slotRace){const order=slotRace++;slotTime=order===1?'15:00':'16:00';await new Promise(r=>setTimeout(r,order===1?150:10));}
+   body=JSON.stringify(data.p_action==='slots'?{slots:[{date:day,time:slotTime}]}:{appointments:[],services:catalog,availability:[{weekday:1,opens:'09:00:00',closes:'18:00:00',active:true}],blocks:[]});
   }
   try{if(body!==undefined)await call('Fetch.fulfillRequest',{requestId,responseCode:200,responseHeaders:[{name:'Content-Type',value:contentType}],body:Buffer.from(body).toString('base64')});else await call('Fetch.continueRequest',{requestId});}catch(e){errors.push(e.message);}
  }
@@ -48,6 +52,20 @@ try{
  console.log('PASS disconnected state never offers a fake reservation');
  mock=true;await navigate('index.html');await wait('window.NN?.serverToday');
  for(const width of [320,375,393,430,768,1440]){await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);}
+ for(const [i,service] of catalog.entries()){
+  await evaluate(`document.querySelectorAll('#bookingServices button')[${i}].click()`);await wait('document.querySelector(".cal-day.open")');
+  await evaluate('document.querySelector(".cal-day.open").click()');await wait('document.querySelector("#timeGrid button")');
+  await evaluate('document.querySelector("#timeGrid button").click()');
+  assert.match(await evaluate('document.getElementById("bookingSummary").textContent'),new RegExp(service.duration_minutes+' minutos'));
+  assert.ok((await evaluate('document.getElementById("bookingSummary").textContent')).includes(new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(service.price_cents/100)));
+  await evaluate('document.querySelector("#panel4 [data-back]").click()');await wait('document.querySelector("#timeGrid button")');
+  await evaluate('document.querySelector("#panel3 [data-back]").click()');await wait('document.querySelector(".cal-day.open")');
+  await evaluate('document.querySelector("#panel2 [data-back]").click()');
+ }
+ availabilityFails=true;await evaluate('document.querySelector("#bookingServices button").click()');
+ await wait('document.getElementById("calendarDays").getAttribute("aria-busy")==="false"');
+ assert.match(await evaluate('document.getElementById("calendarDays").textContent'),/Não foi possível/);
+ availabilityFails=false;await evaluate('document.querySelector("#panel2 [data-back]").click()');
  await viewport(375);await evaluate('document.querySelector("#bookingServices button").click()');await wait('document.querySelector(".cal-day.open")');
  assert.equal(await evaluate('[...document.querySelectorAll(".cal-day")].find(b=>b.textContent==="22").disabled'),true);
  await evaluate('document.querySelector(".cal-day.open").click()');await wait('document.querySelector("#timeGrid button")');
@@ -62,11 +80,24 @@ try{
  await wait('document.getElementById("panelSuccess").classList.contains("active")');assert.equal(bookings,4);
  assert.match(await evaluate('document.getElementById("successSummary").textContent'),/mock-reserva/);
  console.log('PASS service, date, time, phone mask, summary, duplicate submit, database response confirmation, unconfirmed results never succeed, no CAPTCHA (mock)');
- await evaluate('document.getElementById("galleryMore").click()');assert.equal(await evaluate('document.querySelectorAll(".gallery-item").length'),10);
+ await evaluate('window.firstGalleryImage=document.querySelector(".gallery-item img");document.getElementById("galleryMore").click()');assert.equal(await evaluate('document.querySelectorAll(".gallery-item").length'),10);
+ assert.equal(await evaluate('window.firstGalleryImage===document.querySelector(".gallery-item img")'),true);
  await evaluate('document.querySelector(".gallery-item").click()');assert.equal(await evaluate('document.getElementById("lightbox").hidden'),false);
+ const firstSrc=await evaluate('document.getElementById("lightboxImage").src');
+ await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowRight",bubbles:true}))');assert.notEqual(await evaluate('document.getElementById("lightboxImage").src'),firstSrc);
+ await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+ await evaluate('document.querySelector(".nn-lb-nav.next").click()');assert.equal(await evaluate('document.getElementById("lightboxImage").getAnimations().some(a=>a.playState==="running")'),false);
+ await call('Emulation.setEmulatedMedia',{features:[]});
  await evaluate('document.getElementById("closeLightbox").click()');
  mkdirSync('.local/screenshots',{recursive:true});await viewport(393);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync('.local/screenshots/mobile.png',Buffer.from(shot.data,'base64'));
  await navigate('admin.html');await evaluate('document.getElementById("email").value="test@example.invalid";document.getElementById("password").value="mock-password";document.getElementById("loginForm").requestSubmit()');await wait('!document.getElementById("workspace").hidden');await wait('document.querySelectorAll(".admin-stat").length===6');
+ await wait('document.getElementById("adminStatus").textContent==="Agenda atualizada."');
+ const listsBefore=adminLists;
+ await evaluate('document.getElementById("agendaView").value="week";document.getElementById("agendaView").dispatchEvent(new Event("change"))');
+ await wait('document.getElementById("adminStatus").textContent==="Agenda atualizada."');assert.equal(adminLists-listsBefore,1);
+ slotRace=1;await evaluate('document.getElementById("slotService").dispatchEvent(new Event("change"));document.getElementById("slotService").dispatchEvent(new Event("change"))');
+ await wait('document.getElementById("slots").textContent.includes("16:00")');await evaluate('new Promise(r=>setTimeout(r,220))');
+ assert.ok(!(await evaluate('document.getElementById("slots").textContent')).includes('15:00'));slotRace=0;
  for(const width of [320,375,393,430,768,1440]){await viewport(width);for(const tab of ['agenda','services','hours','blocks']){await evaluate(`document.querySelector('[data-tab="${tab}"]').click()`);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Admin overflow ${width} ${tab}`);}}
  await evaluate('document.getElementById("logout").click()');assert.equal(await evaluate('document.getElementById("workspace").hidden'),true);
  assert.deepEqual(errors,[]);console.log('PASS gallery, admin login/logout (mock), six indicators, six widths on all tabs, zero JS exceptions');
