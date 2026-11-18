@@ -1,5 +1,15 @@
 # Estado atual — NandaNails
 
+## Dashboard e calendário aprovados — 18/11/2026
+
+Implementados localmente no admin oficial: sidebar Dashboard/Minha agenda, menu recolhível, KPIs e contadores, barras e rosca de paths independentes, serviços mais procurados/últimos agendamentos, resumo semanal, Dia/Semana/Mês, busca/status, WhatsApp real normalizado e detalhes laterais com ações existentes. Base visual preservada em `REFERENCIAS/NandaNails_dashboard_graficos_hover_completo.html`; dados vêm exclusivamente de admin_action após Auth/is_admin. Sem números demonstrativos em produção. Faturamento é estimativa dos concluídos, sem afirmar pagamento recebido.
+
+Criados `css/admin-dashboard.css`, `js/admin-ui.js`, `tests/admin-dashboard.mjs` e `docs/DASHBOARD_CALENDARIO.md`; modificados admin.html, js/admin.js, teste browser e package.json. CSS público, index/cursos, imagens/favicon/config, migrations/Edge Functions/RLS intactos. Cache limitado à sessão/intervalos, respostas obsoletas descartadas; logout limpa dados. Geral consulta o histórico integral via contrato existente; calendários limitam o DOM e permitem carregar mais.
+
+Check, 23 testes Node, suíte browser pública/administrativa, suíte específica e build aprovados. Rede externa bloqueada nos browsers; seis larguras 320–1440, 10 mil registros sintéticos, hover real, dados vazios/status únicos, concorrência, teclado, datas em Brasília e comparação de 8 seletores × 7 propriedades em 390/1440 px. Sem certificação pixel a pixel, Safari físico, Supabase/Auth/WhatsApp reais ou carga backend. Detalhes, diferenças necessárias, limites e comandos: [docs/DASHBOARD_CALENDARIO.md](../docs/DASHBOARD_CALENDARIO.md). `dist/` regenerado localmente. Sem acesso ao Supabase remoto, SQL, push ou publicação.
+
+Ponto de recuperação: `backup-nandanails-antes-dashboard-calendario` → `9f8ee9410bd3d3cdddbd15c9c01558b0373fc5e0`, preservando todas as pendências iniciais. Implementação atual permanece para revisão local.
+
 Última atualização: 18/11/2026. Versão atual sem Turnstile ou qualquer CAPTCHA, conforme solicitação expressa do usuário. Ele informou migrations `001`/`002`/`003` já aplicadas e CLI vinculada. Nenhuma operação remota foi realizada pelo Codex nesta otimização; deploy/publicação continuam manuais e não autorizados para execução automática.
 
 ## Cursos aprovados — 18/11/2026

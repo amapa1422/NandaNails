@@ -144,16 +144,17 @@ try{
  await evaluate('Promise.all([...document.querySelectorAll(".gallery-item img")].map(img=>{img.loading="eager";return img.decode()}))');
  assert.equal(await evaluate('[...document.querySelectorAll(".gallery-item img")].every(img=>img.complete&&img.naturalWidth>0)'),true);
  mkdirSync('.local/screenshots',{recursive:true});await viewport(393);const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync('.local/screenshots/mobile.png',Buffer.from(shot.data,'base64'));
- await navigate('admin.html');await evaluate('document.getElementById("email").value="test@example.invalid";document.getElementById("password").value="mock-password";document.getElementById("loginForm").requestSubmit()');await wait('!document.getElementById("workspace").hidden');await wait('document.querySelectorAll(".admin-stat").length===6');
+ await navigate('admin.html');await evaluate('document.getElementById("email").value="test@example.invalid";document.getElementById("password").value="mock-password";document.getElementById("loginForm").requestSubmit()');await wait('!document.getElementById("workspace").hidden');await wait('document.querySelectorAll("#stats .admin-stat").length===6');
  await wait('document.getElementById("adminStatus").textContent==="Agenda atualizada."');
  const listsBefore=adminLists;
  await evaluate('document.getElementById("agendaView").value="week";document.getElementById("agendaView").dispatchEvent(new Event("change"))');
- await wait('document.getElementById("adminStatus").textContent==="Agenda atualizada."');assert.equal(adminLists-listsBefore,1);
+ await wait('document.getElementById("adminStatus").textContent==="Agenda atualizada."');assert.equal(adminLists-listsBefore,0);
  slotRace=1;await evaluate('document.getElementById("slotService").dispatchEvent(new Event("change"));document.getElementById("slotService").dispatchEvent(new Event("change"))');
  await wait('document.getElementById("slots").textContent.includes("16:00")');await evaluate('new Promise(r=>setTimeout(r,220))');
  assert.ok(!(await evaluate('document.getElementById("slots").textContent')).includes('15:00'));slotRace=0;
+ await evaluate('document.querySelector("[data-page=agenda]").click()');
  for(const width of [320,375,390,430,768,1440]){await viewport(width);for(const tab of ['agenda','services','hours','blocks']){await evaluate(`document.querySelector('[data-tab="${tab}"]').click()`);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Admin overflow ${width} ${tab}`);}}
  await evaluate('document.getElementById("logout").click()');assert.equal(await evaluate('document.getElementById("workspace").hidden'),true);
  assert.deepEqual(errors,[]);console.log('PASS gallery, admin login/logout (mock), six indicators, six widths on all tabs, zero JS exceptions');
  console.log('Browser QA passed. Chromium emulation does not validate real iOS Safari.');
-}finally{await call('Fetch.disable');ws.close();}
+}finally{await call('Page.navigate',{url:'about:blank'});await call('Fetch.disable');ws.close();}

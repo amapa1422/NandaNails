@@ -104,3 +104,6 @@ Veja [relatório por fases e limitações](docs/ENTREGA.md). Fontes técnicas: [
 ## Backup e recuperação
 
 Ative backups automáticos do projeto e PITR quando disponível no plano. Antes de migrations futuras, faça backup do banco e mantenha o código versionado; nunca reverta SQL apagando reservas. Faça exportações criptografadas com retenção definida e acesso restrito, fora do repositório. Teste restauração em projeto separado, verificando clientes, reservas, usuários autorizados e contagem de registros. Secrets e configurações de Auth/funções devem ser reconstruídos pelo cofre e pelo procedimento de implantação; um dump do banco não os substitui. Após restaurar, mantenha o worker WhatsApp desativado até revisar a fila para evitar reenvios. Programe limpeza das chaves expiradas de `private.rate_limits` e aplique a política de retenção dos dados pessoais em rotina administrativa auditada.
+
+
+Dashboard e calendário administrativos aprovados: [implementação, testes e publicação manual](docs/DASHBOARD_CALENDARIO.md).

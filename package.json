@@ -8,6 +8,7 @@
     "test:db": "python tests/database.py",
     "check": "node scripts/check.mjs",
     "build": "node scripts/package.mjs",
-    "test:browser": "node tests/browser.mjs"
+    "test:browser": "node tests/browser.mjs",
+    "test:dashboard": "node tests/admin-dashboard.mjs"
   }
 }

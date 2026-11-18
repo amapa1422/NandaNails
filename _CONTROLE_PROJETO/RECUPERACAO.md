@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior ao Dashboard e calendário
+
+- Tag inédita: `backup-nandanails-antes-dashboard-calendario`.
+- Commit: `9f8ee9410bd3d3cdddbd15c9c01558b0373fc5e0`, preservando as pendências anteriores revisadas sobre `9a176b3c3e873e3b581495066496be67eec3a0b2`: documentação/testes de cursos, exclusão da referência anterior e inclusão da nova prévia administrativa.
+- Consulta: `git show --stat backup-nandanails-antes-dashboard-calendario`.
+- Antes de recuperar, preservar as alterações atuais em commit revisado e usar branch inédita: `git switch -c recuperacao-nandanails-antes-dashboard-calendario backup-nandanails-antes-dashboard-calendario`.
+- Recuperar Git não exige SQL ou deploy de função. Não restaurar o banco, reaplicar migrations, publicar ou executar push. Entrega: [docs/DASHBOARD_CALENDARIO.md](../docs/DASHBOARD_CALENDARIO.md).
+
 ## Ponto anterior aos cursos
 
 - Tag inédita: `backup-nandanails-antes-cursos`.

@@ -1,5 +1,15 @@
 # Histórico de alterações
 
+## 18/11/2026 — Dashboard e calendário administrativos aprovados
+
+- Preservadas as pendências locais revisadas no commit `9f8ee9410bd3d3cdddbd15c9c01558b0373fc5e0`; tag inédita `backup-nandanails-antes-dashboard-calendario`. Sandbox inicialmente bloqueou a escrita Git; escalonamento do ambiente autorizou commit/tag. Nenhuma referência anterior sobrescrita.
+- Admin oficial mantido como base funcional; referência aprovada como base visual. Criados CSS exclusivo e módulo de apresentação, incorporados menu, indicadores, gráficos, resumo, calendário e detalhes com WhatsApp editável; preservados Auth/is_admin, RPCs, formulários, disponibilidade e ações. Cache/concorrência e limpeza no logout; forms preservados ao alternar telas; DOM progressivo em grandes dias/semanas.
+- Faturamento rotulado estimativa dos concluídos; total/barra incluem todos os status; resumo semanal explicitamente separado dos períodos do Dashboard. Geral integral, agrupado por mês, sem corte de registros da demo. Fuso America/Sao_Paulo; snapshots contratuais mantidos. Sem dados pessoais de produção nos testes.
+- Hover real detectou prioridade CSS da própria referência que impedia engrossar o arco. Complemento corrige sem alterar proporções; verificados 22px apenas no arco apontado e hit testing em três pontos de cada arco, além de legenda/teclado. Paths independentes, sem camada circular invisível.
+- Testes finais aprovados: check, 23 Node, browser geral com mocks, nova suíte de dashboard com rede externa bloqueada, build e diff check. Cobertura: vazio/um/três status, contadores/estimativa, barras/rosca/legenda, calendário/filtros/datas/UTC, WhatsApp/details, Auth e operações simuladas, concorrência/logout/erros, seis larguras 320/375/390/430/768/1440 sem overflow, 10 mil registros sintéticos e DOM limitado. Comparação de 8 seletores × 7 propriedades igual à referência em 390/1440 após transições; capturas em `.local/dashboard/` inspecionadas.
+- Rodadas exploratórias corrigiram sincronização dos testes com animações e salvamentos, seletores do calendário versus lista recente, especificidade do hover e contagem agora escopada dos resumos duplicados. Não registrar falhas iniciais como aprovação. Sem teste real de Auth/Supabase/WhatsApp, Safari físico, carga backend, garantia de pixels ou melhoria global de performance. Geral ainda recebe JSON integral do RPC existente.
+- Relatório/comandos/publicação manual em `docs/DASHBOARD_CALENDARIO.md`; estado e recuperação atualizados. `dist/` local regenerado. Referência preservada; index, estilos públicos, imagens, configuração e todo Supabase intactos. Nenhuma consulta/escrita remota, migration, deploy, push ou envio de mensagem.
+
 ## 18/11/2026 — incorporação dos cursos aprovados
 
 - Referência integral preservada em `c8cda5cb709711abc29e337e00623de0c3170bfc`, tag inédita `backup-nandanails-antes-cursos`; base inicial `d2e8fc350f967d3caead9cb6fc67f2698b57a609`. A única pendência inicial era `REFERENCIAS/`, sem secrets. Git exigiu permissão do ambiente para gravar o ponto de recuperação.
