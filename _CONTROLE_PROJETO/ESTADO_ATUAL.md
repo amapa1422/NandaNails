@@ -1,6 +1,16 @@
 # Estado atual — NandaNails
 
-Última atualização: 17/11/2026. Versão atual sem Turnstile ou qualquer CAPTCHA, conforme solicitação expressa do usuário. Ele informou migrations `001`/`002`/`003` já aplicadas e CLI vinculada. Nenhuma operação remota foi realizada pelo Codex; deploy/publicação continuam manuais e não autorizados para execução automática.
+Última atualização: 18/11/2026. Versão atual sem Turnstile ou qualquer CAPTCHA, conforme solicitação expressa do usuário. Ele informou migrations `001`/`002`/`003` já aplicadas e CLI vinculada. Nenhuma operação remota foi realizada pelo Codex nesta otimização; deploy/publicação continuam manuais e não autorizados para execução automática.
+
+## Otimização local de performance — 18/11/2026
+
+Frontend otimizado em `js/api.js`, `booking.js`, `animations.js`, `experience.js` e `admin.js`. Reutiliza formatadores Intl, agrupa apenas consultas públicas simultâneas (sem cache de respostas concluídas), usa Set/DocumentFragment no calendário e preserva fotos existentes ao expandir a galeria. Preparação de revelações separa leituras/escritas; transições do calendário/fotos dispensam offsetWidth. Painel evita consulta semanal repetida quando já tem o mesmo intervalo e ignora respostas antigas. Timeout de 20 s usa AbortController com limpeza de timer, sem depender de AbortSignal.timeout.
+
+Preservados integralmente HTML, CSS, fotografias/logo, fontes, textos, serviços/preços/durações, configuração local, máscara e todo Supabase. Nenhuma alteração de CORS, migrations, Edge Functions, cotas, idempotência ou confirmação por ID. O usuário informou agora `booking` publicada e `ALLOWED_ORIGINS` corrigida, incluindo GitHub Pages; não consultar/refazer essa integração. As pendências antigas abaixo são registro da entrega anterior, não pedido para novo deploy.
+
+Validação atual: 22 testes Node, navegador Chromium/Edge com mocks em seis larguras, check e build aprovados. Capturas iniciais antes/depois idênticas por SHA-256 em 393 × 852 com fontes externas bloqueadas. Quatro leituras concorrentes idênticas: 4 → 1 requisição. Microbenchmark de 310 datas: mediana 41,60 → 1,39 ms. Rodada CDP de três pares: LCP mediano 752 → 892 ms e CLS 0,01637 inalterado; não houve melhora geral demonstrada de carregamento/tempo de interação. Não há medição de INP, Lighthouse ou Safari/iPhone físico. Detalhes, métricas desfavoráveis, arquivos, limitações e publicação manual em [docs/PERFORMANCE.md](../docs/PERFORMANCE.md).
+
+Base limpa: `7b3b5e78a7cb53f7b8866d1fa27a614ed8401d2e`; tag inédita `backup-nandanails-antes-performance`. Alterações atuais ficam locais para revisão; `dist/` regenerado, sem commit de implementação, push ou publicação pelo Codex.
 
 ## Objetivo e arquitetura
 

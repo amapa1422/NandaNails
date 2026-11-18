@@ -1,5 +1,15 @@
 # Recuperação segura com Git
 
+## Ponto anterior à otimização de performance
+
+- Tag inédita: `backup-nandanails-antes-performance`.
+- Commit: `7b3b5e78a7cb53f7b8866d1fa27a614ed8401d2e`.
+- Criada em 18/11/2026 após conferir árvore limpa, antes de editar código. Nenhuma referência foi substituída.
+- Consulta: `git show --stat backup-nandanails-antes-performance`.
+- As alterações de performance ficam locais para revisão. Antes de recuperar, preservar os arquivos pendentes em commit local com escopo revisado, sem secrets, conforme o procedimento abaixo. Depois: `git switch -c recuperacao-nandanails-antes-performance backup-nandanails-antes-performance`, usando nome novo se necessário.
+- A otimização muda somente frontend/testes/documentação; recuperar não exige SQL ou deploy de Edge Function. Não restaurar banco, reaplicar migrations ou mudar CORS. Não houve publicação/push pelo Codex.
+- Relatório: [docs/PERFORMANCE.md](../docs/PERFORMANCE.md). Artefatos de diagnóstico em `.local/performance/` não são backups de código; o ponto de recuperação é a tag Git.
+
 ## Ponto anterior à versão sem CAPTCHA
 
 - Tag: `backup-nandanails-antes-sem-captcha`.
