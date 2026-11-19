@@ -1,5 +1,7 @@
 # Web Push administrativo — preparação local de 19/11/2026
 
+> Atualização de estado, Central de Notificações: o usuário informou posteriormente que o Push foi ativado e testado com sucesso em iPhone real. O texto abaixo registra a preparação histórica, sem auditoria remota pelo Codex. Não repetir ativação, gerar chaves ou reinstalar inscrições para a Central. A integração incremental 006, seus testes, estados agregados e limites estão em [CENTRAL_NOTIFICACOES.md](CENTRAL_NOTIFICACOES.md).
+
 ## Entrega e estado
 
 Implementado localmente para **GitHub Pages**, em `https://amapa1422.github.io/NandaNails/`, sem Vercel ou aplicativo nativo. Nada foi aplicado no Supabase, nenhum secret real foi criado, nenhum Push foi enviado e nenhum arquivo foi publicado. Para receber avisos reais, o responsável ainda precisa autorizar e executar a ativação descrita abaixo e testar num iPhone físico.

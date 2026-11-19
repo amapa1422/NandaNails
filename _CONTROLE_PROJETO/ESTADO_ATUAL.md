@@ -1,5 +1,23 @@
 # Estado atual — NandaNails
 
+## Revalidação da 006 revisada — 19/11/2026
+
+Migration atualizada pelo usuário com captura de exceções no gatilho principal da Central. Aprovada sem alterações no SQL/código: suíte SQL completa da Central mais falha forçada SQLSTATE 23514 demonstram reserva, fila WhatsApp e seis entregas Push preservadas; claim/finalização aceitos, replay sem duplicação, rollback atômico e recuperação de gravações futuras. O evento perdido na falha exige reconciliação: não é reconstruído automaticamente. Documentação anterior sobre evento obrigatório foi corrigida.
+
+Também passaram SQL de reservas/horários/admin_action/Push/segurança, check, 41 testes Node e as quatro suítes browser (Central, Dashboard/calendário, público e PWA/Push). Código/migration/configurações preservados por hashes. Somente documentação e artefatos locais de teste atualizados. Sem consulta remota, SQL remoto, build, deploy, envio real, publicação ou push. Resultados, hash exato, reprodução e limites: [docs/VALIDACAO_MIGRATION_006.md](../docs/VALIDACAO_MIGRATION_006.md).
+
+## Central de Notificações — 19/11/2026
+
+Implementação local no painel oficial a partir da referência aprovada: sininho/popover, navegação, resumo no Dashboard, indicadores por filtro/período, histórico paginado de 20 eventos, leitura individual/por filtro, detalhes oficiais da reserva e sincronização entre dispositivos por conta. Nenhum exemplo em produção. Visual da Central copiado da prévia; Dashboard/calendário e Push preservados. Comparação de estilos passou em 390/1440 px, com seis larguras sem overflow.
+
+Nova migration **006**, não aplicada remotamente: evento transacional único por reserva, backfill do histórico existente sem enviar Push, leitura persistente por conta administrativa e histórico mínimo sanitizado de estados por dispositivo. RPC exige Auth/is_admin; tabelas privadas com RLS e sem acesso direto. Multidispositivo mostra aceitos e problemas simultaneamente; ausência de registro não inventa status. Retorno de foco e consulta a cada 30 s na aba ativa sincronizam leitura; logout limpa dados/timers e descarta respostas antigas.
+
+**O usuário informou nesta solicitação que o Push está ativo e foi testado em iPhone real.** As seções anteriores sobre preparação ainda não ativa são históricas. Codex não verificou o ambiente remoto. Migrations 001–005, Service Worker, manifesto, funções Push, inscrições, secrets, Cron e Vault permanecem intactos nesta implementação.
+
+Ponto anterior: `backup-nandanails-antes-central-notificacoes-20261119` → `56a9e67`, preservando a referência recebida e edição local prévia no SQL do Cron. Implementação permanece sem commit/push/publicação. Guia completo, arquivos, testes, limites, aplicação manual exclusiva da 006 e publicação posterior: [docs/CENTRAL_NOTIFICACOES.md](../docs/CENTRAL_NOTIFICACOES.md).
+
+Validações locais: check, 41 testes Node, PostgreSQL da Central (10.002 eventos, autorização, persistência, estados, paginação/lote concorrente, falha do ledger e reversão exclusiva), browser da Central com duas páginas simulando dispositivos e 10 mil registros, Dashboard/calendário, site público, PWA/Push, PostgreSQL Push e segurança. Build público em dist, links de documentação, diff check e preservação dos arquivos protegidos aprovados. Sem Supabase/Auth/Push hospedados, dados de produção ou iPhone físico nesta execução. A disponibilidade real da Central depende da aplicação manual autorizada da 006 e publicação do frontend.
+
 ## Web Push administrativo para iPhone — 19/11/2026
 
 Implementação somente local, agora com hospedagem futura mantida no **GitHub Pages** (`https://amapa1422.github.io/NandaNails/`), sem Vercel. O guia anterior de Vercel permanece histórico. PWA administrativo inicia em `/NandaNails/admin.html`, com manifesto próprio, ícones NandaNails existentes e Service Worker sem fetch/cache/dados sensíveis. Novo cartão no Dashboard permite ativar/desativar, verificar status e enviar Push de teste; iPhone recebe instruções para Tela de Início. Sessão autorizada integra token em memória e abertura da agenda no clique, preservando Auth/is_admin e funções existentes.

@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior à Central de Notificações
+
+- Tag inédita: `backup-nandanails-antes-central-notificacoes-20261119` → commit `56a9e67`.
+- Preserva as pendências anteriores revisadas sobre `d4595c6`: referência aprovada da Central e edição local do SQL do Cron. Criada antes de editar a implementação; nenhuma referência anterior substituída.
+- Consultar com `git show --stat backup-nandanails-antes-central-notificacoes-20261119`. Preservar primeiro o trabalho atual e criar branch inédita a partir dessa tag; não usar reset/clean ou forçar troca com pendências.
+- A 006 não foi aplicada remotamente pelo Codex. Recuperar frontend não desfaz banco e não exige remover objetos da Central. Se a 006 vier a ser aplicada e sua remoção for indispensável, revisar e autorizar separadamente `supabase/rollback/202611190006_admin_notification_center.sql`: apaga somente histórico/leituras auxiliares da Central; preserva reservas, inscrições e fila Push.
+- Não executar rollback da 005 enquanto a Central estiver instalada. O Push foi informado como ativo pelo usuário; não alterar Cron/Vault/chaves/inscrições para recuperar apenas a interface. Guia: [docs/CENTRAL_NOTIFICACOES.md](../docs/CENTRAL_NOTIFICACOES.md).
+
 ## Ponto anterior ao Web Push administrativo
 
 - Tag inédita: `backup-nandanails-antes-web-push-20261119`.

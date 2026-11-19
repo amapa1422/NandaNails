@@ -11,6 +11,8 @@
     "test:browser": "node tests/browser.mjs",
     "test:dashboard": "node tests/admin-dashboard.mjs",
     "test:push": "node tests/push-browser.mjs",
-    "test:push:db": "python tests/push.py"
+    "test:push:db": "python tests/push.py",
+    "test:notifications": "node tests/admin-notifications.mjs",
+    "test:notifications:db": "python tests/notification-center.py"
   }
 }
