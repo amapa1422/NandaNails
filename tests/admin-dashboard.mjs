@@ -146,6 +146,41 @@ try{
  records=[{...record('boundary'),starts_at:today+'T01:30:00Z'}];await refresh();await click('[data-page=agenda]');await settled();await click('[data-view=month]');await settled();
  assert.equal(await evaluate('document.querySelector("#calendar [data-appointment=boundary]").closest(".cell").querySelector(".number").title'),'Ver '+new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(today+'T01:30:00Z')));
  await click('[data-page=dashboard]');await settled();
+ // Month lengths and Sao Paulo midnight boundary, with a browser-only frozen clock.
+ await call('Emulation.setEmulatedMedia',{features:[]});
+ await click('[data-dash-period=month]');await settled();
+ for(const [month,dayCount] of [['2025-02',28],['2024-02',29],['2026-04',30],['2026-07',31]]){
+  await evaluate(`window.QAOriginalDate??=Date;window.Date=class extends QAOriginalDate{constructor(...args){super(...(args.length?args:['${month}-15T12:00:00-03:00']));}static now(){return new QAOriginalDate('${month}-15T12:00:00-03:00').getTime();}};`);
+  const appointments=[record('first','confirmed',month+'-01'),record('cancelled','cancelled',month+'-01'),{...record('utc','completed',month+'-02'),starts_at:month+'-02T01:30:00Z'},record('last','confirmed',month+'-'+dayCount)];
+  await evaluate(`NNAdminUI.render({appointments:${JSON.stringify(appointments)}})`);
+  await wait(`document.querySelectorAll('#dashboardBars .chart-col').length===${dayCount}`);
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.date-text')].map(x=>Number(x.textContent))`),Array.from({length:dayCount},(_,i)=>i+1));
+  assert.equal(await evaluate(`document.querySelector('#dashboardBars .value').textContent`),'3');
+  assert.equal(await evaluate(`document.querySelectorAll('#dashboardBars .value')[1].textContent`),'0');
+  for(const width of [320,375,390,430,768,1024,1440]){
+   await viewport(width);await wait('!document.getElementById("nnChartScrollHelp").hidden');
+   assert.equal(await evaluate(`(()=>{const h=document.getElementById('nnChartWindow'),cols=[...document.querySelectorAll('#dashboardBars .chart-col')];return h.scrollWidth>h.clientWidth&&document.documentElement.scrollWidth<=innerWidth&&cols.every((c,i)=>c.offsetWidth>=49&&(!i||c.getBoundingClientRect().left>=cols[i-1].getBoundingClientRect().right));})()`),true,month+' '+width);
+   assert.equal(await evaluate(`document.querySelectorAll('.weekday-text').length`),dayCount);
+  }
+  await viewport(390);await evaluate(`document.getElementById('nnChartWindow').focus()`);
+  await call('Input.dispatchKeyEvent',{type:'keyDown',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'ArrowRight',code:'ArrowRight',windowsVirtualKeyCode:39});
+  await wait(`document.getElementById('nnChartWindow').scrollLeft>0`);
+  await evaluate(`document.querySelector('#dashboardBars .chart-col:last-child').focus()`);await wait(`document.getElementById('nnChartWindow').scrollLeft>500`);
+  assert.equal(await evaluate(`document.activeElement.getAttribute('aria-label')`),(await evaluate(`document.activeElement.title`)));
+  const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(`.local/dashboard/month-${month}-390.png`,Buffer.from(shot.data,'base64'));
+ }
+ // No hint when the full month fits; restores correctly as space becomes narrow.
+ await viewport(2400);await evaluate(`document.getElementById('nnChartWindow').style.cssText='width:2200px;max-width:none'`);await wait('document.getElementById("nnChartScrollHelp").hidden');await evaluate(`document.getElementById('nnChartWindow').style.cssText=''`);
+ await viewport(1440);await evaluate(`document.getElementById('nnChartWindow').scrollLeft=0;document.getElementById('nnChartWindow').scrollIntoView({block:'center'})`);
+ await hover('#dashboardBars .chart-col:first-child');
+ assert.equal(await evaluate(`Number(getComputedStyle(document.querySelectorAll('#dashboardBars .chart-col')[1]).opacity)<.4`),true);
+ await call('Input.dispatchMouseEvent',{type:'mouseMoved',x:0,y:0});
+ await evaluate('window.Date=QAOriginalDate;delete window.QAOriginalDate;window.scrollTo(0,0)');
+ for(const period of ['week','month','all','month','week']){await click(`[data-dash-period=${period}]`);await settled();assert.equal(await evaluate(`document.getElementById('dashboardBars').classList.contains('monthly-bars')`),period==='month');if(period!=='month'){assert.equal(await evaluate(`document.getElementById('nnChartWindow').scrollLeft`),0);assert.equal(await evaluate(`document.getElementById('nnChartScrollHelp').hidden`),true);}}
+ records=[];await refresh();assert.equal(await evaluate(`[...document.querySelectorAll('#dashboardBars .value')].every(x=>x.textContent==='0')`),true);
+ await click('[data-dash-period=all]');await settled();
+ console.log('PASS monthly 28/29/30/31 days, zero/multiple/cancelled/UTC counts, seven widths, keyboard, overflow hint, hover and period resets');
+ await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
  records=Array.from({length:10000},(_,i)=>record('load-'+i,i%3===0?'completed':'confirmed'));const start=Date.now();await refresh();assert.equal(await evaluate('document.getElementById("dashTotal").textContent'),'10000');console.log('PASS 10,000 synthetic records rendered in',Date.now()-start,'ms');
  await click('[data-page=agenda]');await settled();await click('[data-view=month]');await settled();assert.ok(await evaluate('document.querySelectorAll(".item").length<=126'));
  await click('.more');await settled();assert.ok(await evaluate('document.querySelectorAll(".appointment").length<=100'));
@@ -154,7 +189,7 @@ try{
  listDelay=250;await click('#refresh');await click('#logout');await new Promise(r=>setTimeout(r,400));assert.equal(await evaluate('document.getElementById("workspace").hidden'),true);assert.equal(await evaluate('document.getElementById("calendar").textContent'),'');assert.equal(await evaluate('document.getElementById("dashboardRecent").textContent'),'');
  assert.deepEqual(errors,[]);console.log('PASS periods, six responsive widths, collapsed menu, reduced motion, full-circle donut, timezone boundary, bounded calendar, errors and logout race');
  const visualReference={};
- await navigate('REFERENCIAS/NandaNails_dashboard_graficos_hover_completo.html');
+ await navigate('REFERENCIAS/NandaNails_DASHBOARD_COMPLETO_grafico_mensal_ajustado%20(1).html');
  for(const width of [390,1440]){await viewport(width);await new Promise(r=>setTimeout(r,250));visualReference[width]=await specimen();const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(`.local/dashboard/reference-${width}.png`,Buffer.from(shot.data,'base64'));}
  writeFileSync('.local/dashboard/visual-comparison.json',JSON.stringify({actual:visualActual,reference:visualReference},null,2));
  assert.deepEqual(visualActual,visualReference);console.log('PASS reference comparison: 8 selectors × 7 style properties at 390/1440 px');

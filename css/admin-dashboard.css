@@ -142,3 +142,50 @@
 #dashboardDonut #donutSegments .donut-arc.highlight{opacity:1;stroke-width:22;filter:brightness(1.25)}
 #dashboardDonut #donutSegments .donut-arc.dim{opacity:.26}
 @media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){#dashboardDonut #donutSegments .donut-arc:is(:hover,:focus-visible){stroke-width:22;filter:brightness(1.25)}}
+
+/* Ajuste pontual do gráfico mensal: mantém o Dashboard completo e mostra 30/31 dias
+   sem esmagar as colunas no iPhone. Apenas este gráfico rola horizontalmente. */
+.nn-chart-window{min-width:0;max-width:100%;position:relative}
+.nn-chart-window.monthly-scroll{
+  overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+  scrollbar-color:#a25a77 #2a1823;
+  padding:0 0 8px;touch-action:pan-x pan-y;
+}
+.nn-chart-window.monthly-scroll::-webkit-scrollbar{height:6px}
+.nn-chart-window.monthly-scroll::-webkit-scrollbar-track{background:#2b1924;border-radius:8px}
+.nn-chart-window.monthly-scroll::-webkit-scrollbar-thumb{background:#a25a77;border-radius:8px}
+#dashboardBars.monthly-bars{
+  width:max-content;min-width:100%;
+  justify-content:flex-start;gap:8px;
+}
+#dashboardBars.monthly-bars .chart-col{
+  flex:0 0 52px;width:52px;min-width:52px;
+  gap:8px;
+}
+#dashboardBars.monthly-bars .chart-bar-track{width:30px;max-width:100%}
+#dashboardBars.monthly-bars .chart-col label{
+  display:flex;flex-direction:column;gap:3px;
+  align-items:center;text-align:center;line-height:1.2;
+  white-space:nowrap;font-size:10px;
+}
+#dashboardBars.monthly-bars .chart-col label .weekday-text{font-size:10px;color:#bca0ad}
+#dashboardBars.monthly-bars .chart-col label .date-text{font-size:11px;color:#f0d5df;font-weight:700}
+#dashboardBars.monthly-bars .chart-col .value{font-variant-numeric:tabular-nums}
+.nn-chart-scroll-help{
+  font-size:11px;color:#ba96a8;margin:4px 0 0;
+  text-align:center;line-height:1.5;
+}
+.nn-chart-scroll-help[hidden]{display:none}
+@media(max-width:650px){
+ #dashboardBars.monthly-bars .chart-col{flex-basis:49px;width:49px;min-width:49px}
+ #dashboardBars.monthly-bars .chart-bar-track{width:26px}
+ #dashboardBars.monthly-bars{gap:7px}
+}
+@media(prefers-reduced-motion:reduce){.nn-chart-window{scroll-behavior:auto}}
+
+
+/* Espaço interno para valores, foco e zoom sem recorte no contêiner rolável. */
+#dashboardBars.monthly-bars{padding:12px 4px 6px}
+#dashboardBars.monthly-bars .chart-col .value{position:static}
+.nn-chart-window:focus-visible{outline:2px solid #e8a4bb;outline-offset:3px}

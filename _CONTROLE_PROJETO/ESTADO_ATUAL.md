@@ -1,5 +1,17 @@
 # Estado atual — NandaNails
 
+## Correção do gráfico mensal — 19/11/2026
+
+Aplicada localmente a referência `REFERENCIAS/NandaNails_DASHBOARD_COMPLETO_grafico_mensal_ajustado (1).html` (nome recebido com sufixo). Somente o gráfico de barras em Mês ganha rolagem interna, colunas de 52 px (49 px até 650 px), barras de 30/26 px e legenda dia da semana/data em duas linhas. Os 28–31 dias, zeros, cancelamentos, proporções e conversão America/Sao_Paulo continuam vindo do renderizador oficial. Semana/Geral e cálculos/consultas não foram alterados.
+
+Contêiner focável e nomeado quando há overflow, colunas mensais como lista acessível com valor anunciado, foco visível e orientação condicionada ao overflow real. Um ResizeObserver acompanha largura/menu/tela; nenhum listener de scroll ou biblioteca. Na saída de Mês, classes, posição e orientação são limpas. Hover, opacidade e movimento reduzido preservados. Diferença pontual da prévia: valores mensais no fluxo e pequeno padding interno evitam recorte de valor/foco/zoom; a área do gráfico fica ligeiramente mais alta. A referência sozinha exibia a orientação mesmo sem overflow.
+
+Produção: `admin.html`, `css/admin-dashboard.css`, `js/admin-ui.js`. Testes: `tests/admin-dashboard.mjs` ampliado; os comparativos Dashboard e Central apontam à referência atual porque as antigas foram removidas pelo usuário. Controles e `docs/DASHBOARD_CALENDARIO.md` atualizados; `dist/` regenerado localmente.
+
+Validação: check, 41 testes Node, build e quatro suítes browser (Dashboard, Central, público, PWA/Push), com rede externa bloqueada e dados sintéticos. Dashboard cobre 28/29/30/31 dias, zeros/múltiplos/cancelados, ordem, fronteira UTC/Brasília, 320/375/390/430/768/1024/1440 px sem overflow da página, rolagem por teclado/foco até o último dia, orientação ausente quando há espaço, hover mensal, alternância e vazio semanal; regressões de indicadores/rosca/calendário e 10 mil registros aprovadas. Capturas mensais em `.local/dashboard/month-*-390.png`, com inspeção visual em 390 px. Ajustes durante validação: largura do cenário sem overflow e sincronização de animações no harness; orientação passou a ser retirada imediatamente ao sair de Mês. Somente resultados finais são considerados aprovados.
+
+Limites: Edge/Chromium local com viewport móvel; sem Safari/iPhone físico, gesto real de toque, trackpad físico, fontes externas ou produção online. Nenhuma operação remota Supabase, SQL, mudança de migrations/secrets, deploy, publicação ou push. Recuperação: `backup-nandanails-antes-grafico-mensal-20261119` → `f61b90b042da9f5660e7bdcadd13ad76afb60fce`, preservando as remoções/inclusão de referências sobre `831a9a0a72f3967c2e74ed2a5e100e4d4dd1953f`. Implementação permanece sem commit.
+
 ## Auditoria final de performance sem alterações visuais — 19/11/2026
 
 Otimização local limitada a `js/admin.js` e `js/admin-ui.js`: resumo semanal em uma passagem, reutilização dos grupos filtrados para o total, normalização textual da busca sob demanda por evento corrente, agrupamento diário por horário, agregados do Dashboard em uma passagem e menos conversões Date/hoje. Sem novo cache de respostas, persistência, dependências, mudança de rede/contratos ou de animações. HTML/CSS/assets, público, Central, PWA/Push e Supabase preservados por comparação Git.

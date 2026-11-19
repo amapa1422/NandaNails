@@ -1,5 +1,12 @@
 # Recuperação segura com Git
 
+## Ponto anterior à correção do gráfico mensal
+
+- Tag inédita `backup-nandanails-antes-grafico-mensal-20261119` → `f61b90b042da9f5660e7bdcadd13ad76afb60fce`.
+- Preserva as pendências recebidas: quatro referências antigas removidas e nova referência mensal com sufixo `(1)`, sobre `831a9a0`. Nenhuma pendência descartada ou tag substituída.
+- Antes de recuperar, preservar a implementação atual em commit local revisado e criar branch inédita a partir da tag. Não usar reset/clean.
+- Recupera somente código/interface; não exige banco, migrations, Supabase, Push, deploy ou publicação.
+
 ## Ponto anterior à auditoria final de performance
 
 - Tag inédita: `backup-nandanails-antes-performance-final-20261119` → `a0c6a4b451da58cef2f4acafc68a6a74bcbb7a58`.

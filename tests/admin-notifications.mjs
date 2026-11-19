@@ -173,7 +173,7 @@ try{
  notificationFailure=true;await click('#nnRefresh');await wait('document.getElementById("nnFeedback").textContent.includes("indisponível")');notificationFailure=false;
  notificationDelay=250;await click('#nnRefresh');await click('#logout');await new Promise(r=>setTimeout(r,500));assert.equal(await evaluate('document.getElementById("nnList").textContent'),'');assert.equal(await evaluate('document.getElementById("nnBell").hidden'),true);
  console.log('PASS popup/keyboard, six widths, reduced motion, hover, 10,000 mocked records, server errors and logout race');
- await navigate('REFERENCIAS/NandaNails_central_notificacoes_previa.html');await click('[data-page=notifications]');
+ await navigate('REFERENCIAS/NandaNails_DASHBOARD_COMPLETO_grafico_mensal_ajustado%20(1).html');await click('[data-page=notifications]');
  const reference={};for(const width of [390,1440]){await viewport(width);await new Promise(r=>setTimeout(r,220));reference[width]=await styles();const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(`.local/notifications/reference-${width}.png`,Buffer.from(shot.data,'base64'));}
  writeFileSync('.local/notifications/visual-comparison.json',JSON.stringify({actual:visual,reference},null,2));
  assert.deepEqual(visual,reference);assert.deepEqual(errors,[]);
