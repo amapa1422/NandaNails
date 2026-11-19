@@ -1,5 +1,13 @@
 # Estado atual — NandaNails
 
+## Página inicial: apresentação antes do agendamento — 19/11/2026
+
+Reorganização local conforme a referência aprovada: Hero “Suas unhas, seu momento.” → faixa decorativa → agendamento → cursos → serviços → galeria → encerramento. Somente os blocos existentes de `index.html` foram movidos, sem editar seu conteúdo. Comparação automatizada com a tag anterior confirma igualdade integral após a permutação. CSS, scripts de produção, imagens, painel, Central, PWA/Push, configurações e Supabase intactos. Foto principal mantém prioridade alta e secundárias mantêm lazy loading. O título do agendamento mantém a visibilidade móvel anterior, conforme CSS oficial e referência.
+
+`tests/browser.mjs` ganhou verificações de ordem DOM/visual, ausência de duplicação, foto prioritária, composição desktop/mobile e destinos dos botões/âncoras. Passaram check, 41 testes Node, build e as quatro suítes de navegador (público, Dashboard/calendário, Central e PWA/Push), em 320/375/390/430/768/1440 px, sem overflow. Capturas locais em `.local/home-order/`; pacote local em `dist/`. Backend/Auth/Push simulados e rede externa bloqueada nos testes; sem dispositivos físicos ou repetição SQL nesta tarefa.
+
+Recuperação: `backup-nandanails-antes-hero-primeiro-20261119` → `fbd10caacf6be439f27af2b5480cdef8092417ec`, preservando em commit somente a referência recebida sobre `7e1ec5e`. Implementação sem commit, deploy, publicação ou push. Nenhuma operação Supabase remota, reserva ou envio real.
+
 ## Revalidação da 006 revisada — 19/11/2026
 
 Migration atualizada pelo usuário com captura de exceções no gatilho principal da Central. Aprovada sem alterações no SQL/código: suíte SQL completa da Central mais falha forçada SQLSTATE 23514 demonstram reserva, fila WhatsApp e seis entregas Push preservadas; claim/finalização aceitos, replay sem duplicação, rollback atômico e recuperação de gravações futuras. O evento perdido na falha exige reconciliação: não é reconstruído automaticamente. Documentação anterior sobre evento obrigatório foi corrigida.

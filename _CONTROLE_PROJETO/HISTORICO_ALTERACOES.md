@@ -1,5 +1,17 @@
 # Histórico de alterações
 
+## 19/11/2026 — Hero e faixa antes do agendamento
+
+- Pedido: inverter somente a ordem inicial conforme a referência aprovada, preservando identidade visual e funcionamento.
+- Base inicial: `7e1ec5eed60dee1b160e8f7719af38d3af3c6c24`; única pendência era o HTML de referência. Preservado em commit local `fbd10caacf6be439f27af2b5480cdef8092417ec` e tag inédita `backup-nandanails-antes-hero-primeiro-20261119`.
+- `index.html`: movidos integralmente Hero e faixa para antes de `#agendar`. Cursos e demais blocos mantêm a sequência oficial. Nenhum conteúdo interno alterado; nenhum script/CSS/backend fictício copiado. Comparação com Git confirma que a permutação é a única diferença do HTML.
+- `tests/browser.mjs`: ampliada a suíte existente para conferir ordem DOM/visual, Hero/agendamento únicos, foto original prioritária, composição desktop/mobile, legenda, botões e destinos visíveis das âncoras de agendamento/cursos/galeria/serviços/sobre e Reservar.
+- Documentação: estado e histórico atualizados com entrega/testes/limites; recuperação atualizada com a tag. `dist/` regenerado como artefato ignorado. Referência original preservada sem edição.
+- Aprovados: `npm.cmd run check`; `npm.cmd test` (41 testes); `npm.cmd run build`; `node tests/browser.mjs`; `node tests/admin-dashboard.mjs`; `node tests/admin-notifications.mjs`; `node tests/push-browser.mjs`; comparação do HTML e conferência dos arquivos protegidos; `git diff --check`.
+- Edge/Chromium local: 320/375/390/430/768/1440 px, sem overflow/exceções JS; catálogo/calendário/horários/reserva simulada/erros/resposta sem ID/envio duplo, cursos/modal/WhatsApp simulado e galeria/visualizador aprovados. Suítes administrativas e worker PWA local passaram. Capturas em `.local/home-order/hero-*.png`, com inspeção visual em 390/1440 px.
+- Preservados: CSS e scripts de produção, imagens, serviços/preços/regras, admin, Central, Web Push, Service Worker, manifesto, migrations/funções Supabase e config. Nenhuma dependência adicionada. Prioridade da foto principal, lazy das secundárias, animações/reduced-motion/safe-area preservados. Sem novas medições de LCP/CLS.
+- Limites: backend/Auth/Push simulados e rede externa bloqueada nas suítes browser. Sem Supabase remoto, reservas/envios reais, SQL novo ou repetido, dispositivos físicos ou comprovação online. Sem deploy, publicação, secrets ou push. Implementação local sem commit.
+
 ## 19/11/2026 — revalidação SQL e regressão da 006 revisada pelo usuário
 
 - Pedido: testar a captura de exceções do gatilho de notificações sem interferir nas reservas/Push; sem deploy/push.

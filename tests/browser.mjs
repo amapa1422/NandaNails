@@ -81,6 +81,20 @@ try{
  for(const width of [320,375,390,430,768,1440]){
   await viewport(width);await navigate('index.html');await wait('document.querySelectorAll("#bookingCourses button").length===2');
   assert.equal(await evaluate('innerWidth'),width);
+  assert.deepEqual(await evaluate(`[...document.querySelector('main').children].map(s=>s.id||s.className)`),['hero','sobre','agendar','cursos','servicos','galeria','section closing']);
+  assert.equal(await evaluate('document.querySelectorAll(".hero").length===1&&document.querySelectorAll("#agendar").length===1'),true);
+  assert.equal(await evaluate(`(()=>{const hero=document.querySelector('.hero').getBoundingClientRect(),strip=document.querySelector('.intro-strip').getBoundingClientRect(),booking=document.querySelector('#agendar').getBoundingClientRect();return hero.top>=document.querySelector('header').getBoundingClientRect().bottom&&strip.top>=hero.bottom&&booking.top>=strip.bottom})()`),true,`Section positions ${width}`);
+  assert.equal(await evaluate(`(()=>{const text=document.querySelector('.hero-text').getBoundingClientRect(),photo=document.querySelector('.hero-visual').getBoundingClientRect(),title=document.querySelector('.hero h1'),label=document.querySelector('.hero-image-label').getBoundingClientRect(),img=document.querySelector('.hero-visual img');return (innerWidth<=650?photo.top>=text.bottom:photo.left>=text.right)&&label.top>=photo.top&&label.bottom<=photo.bottom&&title.scrollWidth<=title.clientWidth&&img.getAttribute('src')==='assets/8db060d1d75da3c0.jpg'&&img.fetchPriority==='high'&&img.loading!=='lazy'&&getComputedStyle(img).objectFit==='cover'})()`),true,`Hero layout and original priority photo ${width}`);
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.hero a,.top-cta')].map(a=>a.getAttribute('href'))`),['#agendar','#agendar','#cursos','#galeria']);
+  for(const selector of ['.hero a[href="#agendar"]','.hero a[href="#cursos"]','.hero a[href="#galeria"]','.top-cta','.desktop-nav a[href="#servicos"]','.desktop-nav a[href="#sobre"]']){
+   await evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
+   await wait(`location.hash===document.querySelector(${JSON.stringify(selector)}).getAttribute('href')`);
+   assert.ok(await evaluate(`(()=>{const r=document.querySelector(location.hash).getBoundingClientRect(),h=document.querySelector('header'),fixed=['fixed','sticky'].includes(getComputedStyle(h).position);return r.top>=(fixed?h.getBoundingClientRect().bottom:0)&&r.top<innerHeight})()`),`Anchor destination visible ${selector} ${width}`);
+  }
+  await evaluate('document.querySelector(".brand").click()');
+  await wait('scrollY===0');
+  mkdirSync('.local/home-order',{recursive:true});
+  const heroShot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(`.local/home-order/hero-${width}.png`,Buffer.from(heroShot.data,'base64'));
   assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Course page overflow ${width}`);
   assert.equal(await evaluate(`(()=>{const [a,b]=[...document.querySelectorAll('.course-hero-actions a')].map(x=>x.getBoundingClientRect());const c=document.querySelector('.hero-courses').getBoundingClientRect();return Math.abs(a.top-b.top)<1&&c.top>=a.bottom&&[...document.querySelectorAll('.course-hero-actions a')].every(x=>x.scrollWidth<=x.clientWidth)})()`),true,`Hero actions ${width}`);
   for(const key of ['completo','tradicional']){

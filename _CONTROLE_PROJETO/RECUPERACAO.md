@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior à reorganização da página inicial
+
+- Tag inédita: `backup-nandanails-antes-hero-primeiro-20261119` → `fbd10caacf6be439f27af2b5480cdef8092417ec`.
+- Criada antes de editar código em 19/11/2026, preservando a única pendência inicial: HTML de referência aprovado. Base anterior `7e1ec5e`. Nenhuma tag substituída.
+- Consulta: `git show --stat backup-nandanails-antes-hero-primeiro-20261119`.
+- Antes de recuperar, preservar o trabalho pendente revisado em commit local e criar branch inédita a partir da tag. Não usar reset/clean ou sobrescrever alterações locais.
+- Recuperar essa base volta à ordem agendamento → Hero → faixa. Não exige ação no Supabase, painel, Central ou Web Push. Não executar SQL, deploy ou push durante a recuperação.
+
 ## Ponto anterior à Central de Notificações
 
 - Tag inédita: `backup-nandanails-antes-central-notificacoes-20261119` → commit `56a9e67`.
