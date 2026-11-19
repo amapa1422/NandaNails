@@ -1,5 +1,18 @@
 # Histórico de alterações
 
+## 19/11/2026 — refinamento visual final público
+
+- Pedido: aplicar melhorias pontuais da referência `NandaNails_SITE_COMPLETO_menu_ordenado_cursos.html` ao site oficial, preservando seu funcionamento, sem publicação ou Supabase remoto.
+- Recuperação: base `fbd10caacf6be439f27af2b5480cdef8092417ec`; pendências anteriores de index, browser e controle mais a nova referência preservadas no commit local `e05c3a3632e18add8469ba6aceea163ef1573af6`. Tag inédita `backup-nandanails-antes-refinamento-final-20261119`; nenhuma tag substituída.
+- `index.html`: nav acessível na ordem Sobre/Cursos/Serviços/Galeria e remoção de outline somente do Ver detalhes tradicional. Reservar e destinos oficiais mantidos; seções já estavam ordenadas e não foram movidas.
+- `css/styles.css`: keyframes e escalonamento do hero conforme referência, somente opacity/transform; entrada modal 360 ms e saída 230 ms; âncoras 88/76 px; limites de viewport e safe areas. Reduced-motion desativa animações. Sem overlay de carregamento, mudança de imagens ou dependências novas.
+- `js/courses.js`: guarda contra abertura/saída duplicadas; espera por `getAnimations().finished` sem timers, com tratamento de cancelamento; inert/scroll/foco preservados até a saída; fechamento imediato com reduced-motion. Escape não aciona o listener de fechar galeria enquanto o curso está aberto. Conteúdo, preços e mensagens WhatsApp intactos.
+- `js/animations.js` (exceção necessária ao escopo prioritário): removidos apenas título/ações/foto do hero da coleta de scroll, pois o observador anterior poderia esconder a foto móvel ou competir com a animação inicial. As revelações das demais seções continuam intactas.
+- `tests/browser.mjs`: sétima largura 1024, destinos e ordem do menu, igualdade dos estilos dos botões rosa, reduced-motion, entrada única sem replay por scroll, saída ainda visível/bloqueada antes de terminar, quatro formas de fechar e cliques repetidos. Testes antigos passaram a aguardar a saída real. Controle atualizado em estado/histórico/recuperação.
+- Aprovados: `npm.cmd run check`; `npm.cmd test` (41/41); `npm.cmd run build`; `node tests/browser.mjs`; `node tests/admin-dashboard.mjs`; `node tests/admin-notifications.mjs`; `node tests/push-browser.mjs`; `node .local/refinement-check.mjs`; `git diff --check`. Browser público em 320/375/390/430/768/1024/1440 px sem overflow/exceções; painel/Central/PWA nas seis larguras existentes. Complemento comprova entrada modal de 360 ms, saída com opacidade intermediária, fechamento antecipado, troca de reduced-motion durante saída, foco e hero legível com scripts desativados. Capturas em `.local/home-order/` e `.local/courses/`, inspeção em 1440/390 px.
+- Preservados por comparação Git: administração/Service Worker/manifesto, config, fotos/ícones, catálogo, API, booking, experience, migrations e funções Supabase. Testes Node também validam bytes das imagens. `dist/` regenerado como artefato ignorado; referência não editada.
+- Limites: browsers Edge/Chromium com rede externa bloqueada e provedores simulados; não certifica Safari/iPhone físico, entrega real de Push, WhatsApp ou reserva online. Sem novas métricas LCP/CLS/INP, testes SQL repetidos ou acesso remoto. Nenhuma reserva/envio real, alteração de secrets, VAPID, Cron/Vault, deploy, publicação ou push. Implementação permanece local para revisão.
+
 ## 19/11/2026 — Hero e faixa antes do agendamento
 
 - Pedido: inverter somente a ordem inicial conforme a referência aprovada, preservando identidade visual e funcionamento.

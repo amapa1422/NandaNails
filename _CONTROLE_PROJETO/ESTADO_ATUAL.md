@@ -1,5 +1,15 @@
 # Estado atual — NandaNails
 
+## Refinamento visual final do site público — 19/11/2026
+
+Implementado localmente a partir de `REFERENCIAS/NandaNails_SITE_COMPLETO_menu_ordenado_cursos.html`: menu Sobre/Cursos/Serviços/Galeria e Reservar separado; dois Ver detalhes com o mesmo gradiente rosa; entrada CSS escalonada do hero (foto 1150 ms, zoom leve); modais com entrada de 360 ms e saída de 230 ms. A ordem aprovada das seções já existia e foi preservada. Textos, preços, foto e demais funcionalidades oficiais mantidos, sem scripts demonstrativos da referência.
+
+`js/courses.js` aguarda as animações reais de saída antes de ocultar o modal, liberar inert/rolagem e devolver foco. Cliques repetidos são ignorados; redução de movimento fecha imediatamente, inclusive ao mudar durante a saída. Escape fica restrito ao modal ativo para evitar desbloqueio prematuro pelo listener da galeria. `js/animations.js` recebeu somente a exclusão do hero da revelação por scroll, necessária para não conflitar com a entrada única em CSS. Âncoras e safe areas do modal ajustadas em CSS. Menu móvel existente preservado (links ocultos até 650 px, Reservar visível).
+
+Passaram check, 41 testes Node, build e quatro suítes browser (público, Dashboard, Central, PWA/Push). Público validado em 320/375/390/430/768/1024/1440 px, sem overflow ou exceções JS; testes ampliados em `tests/browser.mjs`. Verificação complementar em `.local/refinement-check.mjs`: animações reais, fechamento antecipado, troca de reduced-motion durante saída, foco e hero visível/foto carregada com scripts desativados. Capturas em `.local/home-order/` e `.local/courses/`, inspecionadas em 1440/390 px. `dist/` regenerado localmente. Sem medição nova de LCP/CLS, Safari/iPhone físico ou comprovação online; rede externa bloqueada e backend/Auth/Push simulados nos browsers.
+
+Recuperação: `backup-nandanails-antes-refinamento-final-20261119` → `e05c3a3632e18add8469ba6aceea163ef1573af6`, preservando todas as pendências anteriores revisadas, inclusive a nova referência. Refinamento sem commit de implementação, push, deploy ou publicação. Supabase remoto não acessado; imagens, config, administração, migrations, Edge Functions, Cron/Vault e VAPID intactos.
+
 ## Página inicial: apresentação antes do agendamento — 19/11/2026
 
 Reorganização local conforme a referência aprovada: Hero “Suas unhas, seu momento.” → faixa decorativa → agendamento → cursos → serviços → galeria → encerramento. Somente os blocos existentes de `index.html` foram movidos, sem editar seu conteúdo. Comparação automatizada com a tag anterior confirma igualdade integral após a permutação. CSS, scripts de produção, imagens, painel, Central, PWA/Push, configurações e Supabase intactos. Foto principal mantém prioridade alta e secundárias mantêm lazy loading. O título do agendamento mantém a visibilidade móvel anterior, conforme CSS oficial e referência.

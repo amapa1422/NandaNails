@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior ao refinamento visual final público
+
+- Tag inédita: `backup-nandanails-antes-refinamento-final-20261119` → `e05c3a3632e18add8469ba6aceea163ef1573af6`.
+- Preserva as pendências anteriores revisadas sobre `fbd10ca`: reorganização da página inicial, respectivos testes/documentação e nova referência aprovada. Criada antes de editar o refinamento; nenhuma tag substituída.
+- Consulta: `git show --stat backup-nandanails-antes-refinamento-final-20261119`.
+- Antes de recuperar, preservar o trabalho atual em commit local revisado e criar branch inédita a partir dessa tag. Não usar reset/clean ou sobrescrever pendências.
+- A base mantém hero/faixa antes da agenda, mas volta ao menu anterior, ao botão tradicional outline e ao fechamento imediato do modal. Recuperar frontend não exige SQL, Supabase, Cron/Vault, Push, deploy ou publicação.
+
 ## Ponto anterior à reorganização da página inicial
 
 - Tag inédita: `backup-nandanails-antes-hero-primeiro-20261119` → `fbd10caacf6be439f27af2b5480cdef8092417ec`.

@@ -43,8 +43,8 @@
     const collect=(selector,className,stagger=false)=>document.querySelectorAll(selector).forEach((el,i)=>{
       if(el.dataset.nnObserved!=='1')items.push({el,className,delay:stagger?`${i%4*55}ms`:null});
     });
-    collect('.hero-text h1,.hero-actions,.booking-copy h2,.section-heading,.intro-strip,.closing,.gallery-more','nn-reveal');
-    collect('.hero-visual','nn-photo-reveal');
+    // Hero has its own one-shot CSS entrance, independent of scrolling.
+    collect('.booking-copy h2,.section-heading,.intro-strip,.closing,.gallery-more','nn-reveal');
     collect('.services-grid .service-card,.gallery-grid .gallery-item','nn-reveal',true);
     // Read all bounds before changing classes/styles: one layout, no read/write loop.
     for(const item of items)item.visible=item.el.getBoundingClientRect().top<innerHeight*.89;

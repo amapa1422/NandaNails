@@ -6,16 +6,28 @@ const courses={completo:{title:'Curso completo',desc:'Três dias de formação p
 for(const [key,name,price,duration] of [['completo','Curso completo',300,'3 dias'],['tradicional','Curso tradicional',200,'2 dias']]){const b=document.createElement('button');b.type='button';b.className='choice course-choice';b.innerHTML='<span class="choice-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m2 9 10-5 10 5-10 5-10-5Z"/><path d="M6 11v5c3 3 9 3 12 0v-5M22 9v7"/></svg></span><span class="choice-copy"><span class="course-tag">FORMAÇÃO · '+duration.toUpperCase()+'</span><strong></strong><small></small></span><span class="choice-arrow"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>';b.querySelector('strong').textContent=name;b.querySelector('small').textContent=money(price)+' · Conheça o curso';b.addEventListener('click',()=>open(key));choices.append(b)};
 let selectedCourse='',opener=null,previousOverflow='';
 const modal=document.getElementById('courseModal'),by=id=>document.getElementById(id);
-const close=()=>{
- if(modal.hidden)return;
- modal.hidden=true;document.body.style.overflow=previousOverflow;
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+let closing=false;
+const finishClose=()=>{
+ if(!closing)return;
+ modal.hidden=true;modal.classList.remove('is-closing');closing=false;
+ document.body.style.overflow=previousOverflow;
  document.querySelector('main').inert=false;
  document.querySelector('header').inert=false;
  document.querySelector('footer').inert=false;
  opener?.focus({preventScroll:true});
 };
+const close=()=>{
+ if(modal.hidden||closing)return;
+ closing=true;
+ if(reduced.matches){finishClose();return;}
+ modal.classList.add('is-closing');
+ // Await the actual CSS exit, including cancellation; no duration timer to drift.
+ Promise.allSettled(modal.getAnimations({subtree:true}).map(a=>a.finished)).then(finishClose);
+};
+reduced.addEventListener('change',()=>{if(reduced.matches&&closing)finishClose();});
 function open(key){
- const c=courses[key];if(!c)return;
+ const c=courses[key];if(!c||!modal.hidden)return;
  selectedCourse=key;opener=document.activeElement;previousOverflow=document.body.style.overflow;
  by('modalTitle').textContent=c.title;by('modalDesc').textContent=c.desc;
  by('modalPrice').textContent=c.price;by('modalPayment').textContent=c.payment;
@@ -30,14 +42,14 @@ function open(key){
 document.querySelectorAll('[data-course]').forEach(b=>b.addEventListener('click',()=>open(b.dataset.course)));
 by('closeModal').addEventListener('click',close);by('backModal').addEventListener('click',close);
 by('interestButton').addEventListener('click',()=>{
- const c=courses[selectedCourse];if(!c||modal.hidden)return;
+ const c=courses[selectedCourse];if(!c||modal.hidden||closing)return;
  const msg=`Olá! Tenho interesse no ${c.title} da NandaNails (${c.price}). Gostaria de receber mais informações sobre as próximas turmas, datas, horários, conteúdo do curso e formas de pagamento.`;
  window.open('https://wa.me/554491712430?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer');
 });
 modal.addEventListener('click',e=>{if(e.target===modal)close();});
 document.addEventListener('keydown',e=>{
  if(modal.hidden)return;
- if(e.key==='Escape'){e.preventDefault();close();}
+ if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();}
  if(e.key==='Tab'){
   const items=[...modal.querySelectorAll('button,a[href]')].filter(el=>!el.disabled);
   const first=items[0],last=items[items.length-1];

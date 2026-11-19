@@ -319,3 +319,83 @@ dialog{background:var(--paper);color:var(--ink);border:1px solid var(--line);bor
 @media(max-width:480px){.hero .course-hero-actions{gap:10px}.hero .course-hero-actions .btn{flex:1;min-width:0;padding:12px 9px;gap:7px;font-size:12px}.hero .course-hero-actions .btn svg{width:16px;height:16px}.hero .hero-courses{margin-top:18px}}
 @media(max-width:360px){.hero .course-hero-actions{gap:8px}.hero .course-hero-actions .btn{font-size:11px;padding-inline:6px;gap:4px}}
 @media(prefers-reduced-motion:reduce){:is(#cursos,#courseModal,#bookingCourses) *,.hero .hero-courses{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* Initial entrance and course transitions from the approved reference. */
+@keyframes nn-intro-photo {
+  from { opacity: 0; transform: scale(1.035); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes nn-intro-content {
+  from { opacity: 0; transform: translate3d(0, 13px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero .hero-visual img {
+    animation: nn-intro-photo 1150ms cubic-bezier(.22,1,.36,1) both;
+    transform-origin: center center;
+  }
+  .hero .hero-text .eyebrow {
+    animation: nn-intro-content 780ms cubic-bezier(.22,1,.36,1) 90ms both;
+  }
+  .hero .hero-text h1 {
+    animation: nn-intro-content 900ms cubic-bezier(.22,1,.36,1) 180ms both;
+  }
+  .hero .hero-text .hero-actions {
+    animation: nn-intro-content 800ms cubic-bezier(.22,1,.36,1) 350ms both;
+  }
+  .hero .hero-text .hero-courses {
+    animation: nn-intro-content 750ms cubic-bezier(.22,1,.36,1) 440ms both;
+  }
+  .hero .hero-image-label {
+    animation: nn-intro-content 800ms cubic-bezier(.22,1,.36,1) 540ms both;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero .hero-visual img,
+  .hero .hero-text .eyebrow,
+  .hero .hero-text h1,
+  .hero .hero-text .hero-actions,
+  .hero .hero-text .hero-courses,
+  .hero .hero-image-label {animation: none !important; opacity: 1 !important; transform: none !important;}
+}
+
+
+/* ANIMAÇÃO EXTRA — modais dos dois cursos: entrada e fechamento suaves,
+   sem alterar o estilo, o conteúdo, a navegação ou o restante da página. */
+@keyframes nnBackdropOpen { from { opacity: 0 } to { opacity: 1 } }
+@keyframes nnBackdropClose { from { opacity: 1 } to { opacity: 0 } }
+@keyframes nnModalOpen {
+  from { opacity: 0; transform: translate3d(0,20px,0) scale(.965) }
+  to { opacity: 1; transform: translate3d(0,0,0) scale(1) }
+}
+@keyframes nnModalClose {
+  from { opacity: 1; transform: translate3d(0,0,0) scale(1) }
+  to { opacity: 0; transform: translate3d(0,12px,0) scale(.98) }
+}
+#courseModal:not([hidden]) { animation: nnBackdropOpen 280ms ease both; }
+#courseModal:not([hidden]) .modal-card {
+  animation: nnModalOpen 360ms cubic-bezier(.2,.85,.2,1) both;
+}
+#courseModal.is-closing:not([hidden]) {
+  animation: nnBackdropClose 230ms ease both;
+}
+#courseModal.is-closing:not([hidden]) .modal-card {
+  animation: nnModalClose 230ms ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  #courseModal:not([hidden]),
+  #courseModal:not([hidden]) .modal-card,
+  #courseModal.is-closing:not([hidden]),
+  #courseModal.is-closing:not([hidden]) .modal-card {
+    animation: none !important;
+  }
+}
+
+
+/* Navegação principal: destino visível após clicar no menu fixo. */
+#sobre, #cursos, #servicos, #galeria, #agendar { scroll-margin-top: 88px; }
+@media(max-width:650px){#sobre, #cursos, #servicos, #galeria, #agendar { scroll-margin-top: 76px; }}
+
+/* Keep the dialog inside the usable iOS viewport and safe areas. */
+#courseModal{padding:max(18px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+#courseModal .modal-card{max-height:min(90dvh,calc(100dvh - max(18px,env(safe-area-inset-top)) - max(18px,env(safe-area-inset-bottom))))}

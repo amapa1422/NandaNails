@@ -51,6 +51,10 @@ try{
  assert.equal(await evaluate('[...document.querySelectorAll("#bookingServices button")].every(b=>b.disabled)'),true);
  console.log('PASS disconnected state never offers a fake reservation');
 
+ assert.equal(await evaluate(`getComputedStyle(document.querySelector('.hero img')).animationName`),'nn-intro-photo');
+ await wait(`document.querySelector('.hero img').getAnimations().every(a=>a.playState==='finished')`);
+ await evaluate('window.heroAnimation=document.querySelector(".hero img").getAnimations()[0];window.scrollTo(0,1200);window.scrollTo(0,0)');
+ assert.equal(await evaluate('window.heroAnimation===document.querySelector(".hero img").getAnimations()[0]&&window.heroAnimation.playState==="finished"'),true);
  assert.equal(await evaluate('document.querySelectorAll("#bookingCourses button").length'),2);
  await evaluate('window.coursePopups=[];window.open=(...args)=>window.coursePopups.push(args)');
  for(const [key,title,price,days] of [['completo','Curso completo','R$ 300,00','3 DIAS'],['tradicional','Curso tradicional','R$ 200,00','2 DIAS']]){
@@ -73,20 +77,23 @@ try{
   await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Tab",bubbles:true,cancelable:true}))');
   assert.equal(await evaluate('document.activeElement.id'),'closeModal');
   await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true}))');
-  assert.equal(await evaluate('document.getElementById("courseModal").hidden'),true);
+  await wait('document.getElementById("courseModal").hidden');
   assert.equal(await evaluate('document.activeElement.closest("#bookingCourses")!==null'),true);
  }
  mkdirSync('.local/courses',{recursive:true});
  await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
- for(const width of [320,375,390,430,768,1440]){
+ for(const width of [320,375,390,430,768,1024,1440]){
   await viewport(width);await navigate('index.html');await wait('document.querySelectorAll("#bookingCourses button").length===2');
   assert.equal(await evaluate('innerWidth'),width);
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.desktop-nav a')].map(a=>a.getAttribute('href'))`),['#sobre','#cursos','#servicos','#galeria']);
+  assert.equal(await evaluate(`(()=>{const props=['backgroundImage','borderRadius','fontSize','fontWeight','minHeight','padding','gap','transition'];const [a,b]=[...document.querySelectorAll('#cursos [data-course]')].map(x=>getComputedStyle(x));return props.every(p=>a[p]===b[p])&&a.backgroundImage.includes('linear-gradient')})()`),true,`Matching pink buttons ${width}`);
+  assert.equal(await evaluate(`document.querySelector('.hero img').getAnimations().length===0`),true,'Reduced motion disables entrance');
   assert.deepEqual(await evaluate(`[...document.querySelector('main').children].map(s=>s.id||s.className)`),['hero','sobre','agendar','cursos','servicos','galeria','section closing']);
   assert.equal(await evaluate('document.querySelectorAll(".hero").length===1&&document.querySelectorAll("#agendar").length===1'),true);
   assert.equal(await evaluate(`(()=>{const hero=document.querySelector('.hero').getBoundingClientRect(),strip=document.querySelector('.intro-strip').getBoundingClientRect(),booking=document.querySelector('#agendar').getBoundingClientRect();return hero.top>=document.querySelector('header').getBoundingClientRect().bottom&&strip.top>=hero.bottom&&booking.top>=strip.bottom})()`),true,`Section positions ${width}`);
   assert.equal(await evaluate(`(()=>{const text=document.querySelector('.hero-text').getBoundingClientRect(),photo=document.querySelector('.hero-visual').getBoundingClientRect(),title=document.querySelector('.hero h1'),label=document.querySelector('.hero-image-label').getBoundingClientRect(),img=document.querySelector('.hero-visual img');return (innerWidth<=650?photo.top>=text.bottom:photo.left>=text.right)&&label.top>=photo.top&&label.bottom<=photo.bottom&&title.scrollWidth<=title.clientWidth&&img.getAttribute('src')==='assets/8db060d1d75da3c0.jpg'&&img.fetchPriority==='high'&&img.loading!=='lazy'&&getComputedStyle(img).objectFit==='cover'})()`),true,`Hero layout and original priority photo ${width}`);
   assert.deepEqual(await evaluate(`[...document.querySelectorAll('.hero a,.top-cta')].map(a=>a.getAttribute('href'))`),['#agendar','#agendar','#cursos','#galeria']);
-  for(const selector of ['.hero a[href="#agendar"]','.hero a[href="#cursos"]','.hero a[href="#galeria"]','.top-cta','.desktop-nav a[href="#servicos"]','.desktop-nav a[href="#sobre"]']){
+  for(const selector of ['.hero a[href="#agendar"]','.hero a[href="#cursos"]','.hero a[href="#galeria"]','.top-cta','.desktop-nav a[href="#cursos"]','.desktop-nav a[href="#galeria"]','.desktop-nav a[href="#servicos"]','.desktop-nav a[href="#sobre"]']){
    await evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
    await wait(`location.hash===document.querySelector(${JSON.stringify(selector)}).getAttribute('href')`);
    assert.ok(await evaluate(`(()=>{const r=document.querySelector(location.hash).getBoundingClientRect(),h=document.querySelector('header'),fixed=['fixed','sticky'].includes(getComputedStyle(h).position);return r.top>=(fixed?h.getBoundingClientRect().bottom:0)&&r.top<innerHeight})()`),`Anchor destination visible ${selector} ${width}`);
@@ -104,27 +111,34 @@ try{
    assert.ok(await evaluate('document.querySelector(".modal-card").getBoundingClientRect().bottom<=innerHeight'),`Modal fits ${width}`);
    const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});writeFileSync(`.local/courses/${key}-${width}.png`,Buffer.from(shot.data,'base64'));
    await evaluate('document.getElementById("backModal").click()');
+   await wait('document.getElementById("courseModal").hidden');
   }
  }
  await call('Emulation.setEmulatedMedia',{features:[]});
- for(const id of ['closeModal','courseModal']){
+ for(const id of ['closeModal','backModal','courseModal','Escape']){
   await evaluate('document.querySelector("[data-course=completo]").click()');
-  await evaluate(`document.getElementById('${id}').click()`);
-  assert.equal(await evaluate('document.getElementById("courseModal").hidden'),true);
+  await evaluate('new Promise(r=>setTimeout(r,380))');
+  if(id==='Escape')await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"Escape",bubbles:true}))');
+  else await evaluate(`document.getElementById('${id}').click()`);
+  assert.equal(await evaluate('!document.getElementById("courseModal").hidden&&document.querySelector("main").inert&&document.body.style.overflow==="hidden"'),true);
+  assert.equal(await evaluate('document.querySelector("#courseModal .modal-card").getAnimations().some(a=>a.animationName==="nnModalClose")'),true);
+  await evaluate('document.getElementById("backModal").click();document.querySelector("[data-course=tradicional]").click()');
+  assert.equal(await evaluate('document.getElementById("modalTitle").textContent'), 'Curso completo');
+  await wait('document.getElementById("courseModal").hidden');
  }
  assert.equal(await evaluate('document.body.style.overflow'), '');
  assert.equal(await evaluate('document.querySelector("main").inert'),false);
- console.log('PASS independent offline courses, prices, durations, WhatsApp messages, Escape/back/close/backdrop, focus trap/return, six widths and hero button rows');
+ console.log('PASS independent offline courses, prices, durations, WhatsApp messages, Escape/back/close/backdrop, focus trap/return, seven widths and hero button rows');
 
  mock=true;await navigate('index.html');await wait('window.NN?.serverToday');
- for(const width of [320,375,390,430,768,1440]){
+ for(const width of [320,375,390,430,768,1024,1440]){
   await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);
   assert.equal(await evaluate(`document.querySelectorAll('a[href*="admin"],.admin-link,script[src*="admin"]').length`),0);
   assert.equal(await evaluate('document.body.textContent.includes("\u00c1rea da Nanda")'),false);
   assert.equal(await evaluate('document.querySelector("footer").children.length'),2);
   assert.ok(await evaluate('(()=>{const [brand,copy]=[...document.querySelector("footer").children].map(x=>x.getBoundingClientRect());return brand.left>=0&&copy.right<=innerWidth&&(innerWidth<=650?copy.top>=brand.bottom:Math.abs((brand.top+brand.bottom-copy.top-copy.bottom)/2)<1)})()'),`Footer alignment ${width}`);
  }
- console.log('PASS public page without administrative links, footer alignment and six responsive widths');
+ console.log('PASS public page without administrative links, footer alignment and seven responsive widths');
  for(const [i,service] of catalog.entries()){
   await evaluate(`document.querySelectorAll('#bookingServices button')[${i}].click()`);await wait('document.querySelector(".cal-day.open")');
   await evaluate('document.querySelector(".cal-day.open").click()');await wait('document.querySelector("#timeGrid button")');
@@ -174,8 +188,8 @@ try{
  await wait('document.getElementById("slots").textContent.includes("16:00")');await evaluate('new Promise(r=>setTimeout(r,220))');
  assert.ok(!(await evaluate('document.getElementById("slots").textContent')).includes('15:00'));slotRace=0;
  await evaluate('document.querySelector("[data-page=agenda]").click()');
- for(const width of [320,375,390,430,768,1440]){await viewport(width);for(const tab of ['agenda','services','hours','blocks']){await evaluate(`document.querySelector('[data-tab="${tab}"]').click()`);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Admin overflow ${width} ${tab}`);}}
+ for(const width of [320,375,390,430,768,1024,1440]){await viewport(width);for(const tab of ['agenda','services','hours','blocks']){await evaluate(`document.querySelector('[data-tab="${tab}"]').click()`);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Admin overflow ${width} ${tab}`);}}
  await evaluate('document.getElementById("logout").click()');assert.equal(await evaluate('document.getElementById("workspace").hidden'),true);
- assert.deepEqual(errors,[]);console.log('PASS gallery, admin login/logout (mock), six indicators, six widths on all tabs, zero JS exceptions');
+ assert.deepEqual(errors,[]);console.log('PASS gallery, admin login/logout (mock), six indicators, seven widths on all tabs, zero JS exceptions');
  console.log('Browser QA passed. Chromium emulation does not validate real iOS Safari.');
 }finally{await call('Page.navigate',{url:'about:blank'});await call('Fetch.disable');ws.close();}
