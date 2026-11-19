@@ -1,5 +1,15 @@
 # Estado atual — NandaNails
 
+## Auditoria final de performance sem alterações visuais — 19/11/2026
+
+Otimização local limitada a `js/admin.js` e `js/admin-ui.js`: resumo semanal em uma passagem, reutilização dos grupos filtrados para o total, normalização textual da busca sob demanda por evento corrente, agrupamento diário por horário, agregados do Dashboard em uma passagem e menos conversões Date/hoje. Sem novo cache de respostas, persistência, dependências, mudança de rede/contratos ou de animações. HTML/CSS/assets, público, Central, PWA/Push e Supabase preservados por comparação Git.
+
+Laboratório Edge, CPU 4×, 10 mil registros sintéticos, duas rodadas por lado: processamento síncrono Dashboard + resumo com mediana 1882→962 ms em 390 px e 1320→1033 ms em 1440; sequência de busca 723→20 ms e 452→24 ms. Calendários tiveram melhora agregada, com poucas amostras e variação relevante; não implica INP ou tempo de pintura. Busca inicial ainda custa normalização; cache textual adicionou cerca de 778 KB para 10 mil registros após GC, liberados no logout no ensaio controlado. Não foi comprovada redução geral de memória nem ganho de carregamento público, cujo código ficou intacto.
+
+HTML renderizado e pixels idênticos em 12 estados nos dois comparativos finais contra a primeira baseline. Outra baseline teve ruído de pintura de 1/255 em 76 pixels, também entre baselines; par estrito correspondente foi rejeitado, sem afrouxar o teste. Passaram check, 41 testes Node, build e quatro suítes browser, estresse de rede/CPU e ensaio de memória/GC. Público em sete larguras, admin/Central/Push nas seis existentes. Sem dispositivos físicos, métricas de campo, INP/FPS válidos, SQL/migrations executados ou Supabase remoto.
+
+Relatório completo, auditoria de dependências, métricas/limites, reprodução, diff e candidatos à limpeza: [docs/PERFORMANCE_FINAL.md](../docs/PERFORMANCE_FINAL.md). Quatro novos scripts de diagnóstico em tests; brutos/PNG/diff em `.local/performance-final/`; `dist/` regenerado. Nenhum arquivo excluído. Recuperação: `backup-nandanails-antes-performance-final-20261119` → `a0c6a4b451da58cef2f4acafc68a6a74bcbb7a58`, preservando em commit as pendências do refinamento visual anterior. Implementação atual sem commit, deploy, publicação ou push; sem reservas/envios reais ou alterações de secrets/VAPID/Cron/Vault.
+
 ## Refinamento visual final do site público — 19/11/2026
 
 Implementado localmente a partir de `REFERENCIAS/NandaNails_SITE_COMPLETO_menu_ordenado_cursos.html`: menu Sobre/Cursos/Serviços/Galeria e Reservar separado; dois Ver detalhes com o mesmo gradiente rosa; entrada CSS escalonada do hero (foto 1150 ms, zoom leve); modais com entrada de 360 ms e saída de 230 ms. A ordem aprovada das seções já existia e foi preservada. Textos, preços, foto e demais funcionalidades oficiais mantidos, sem scripts demonstrativos da referência.

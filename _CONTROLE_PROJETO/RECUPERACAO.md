@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior à auditoria final de performance
+
+- Tag inédita: `backup-nandanails-antes-performance-final-20261119` → `a0c6a4b451da58cef2f4acafc68a6a74bcbb7a58`.
+- Criada antes da otimização, preservando as pendências revisadas do refinamento visual sobre `e05c3a3`: HTML/CSS, cursos/animações, testes e controles. Branch original `main`; nenhuma tag substituída.
+- Consulta: `git show --stat backup-nandanails-antes-performance-final-20261119`.
+- Antes de recuperar, preservar o trabalho atual em commit local revisado e criar branch inédita a partir da tag. Não usar reset/clean ou sobrescrever pendências.
+- Essa base conserva o visual final aprovado, menu, modais animados e ordem das seções; retira apenas as otimizações administrativas desta auditoria. Não exige SQL, reaplicação de migrations, Supabase, Push, Cron/Vault, deploy ou publicação. Relatório: [docs/PERFORMANCE_FINAL.md](../docs/PERFORMANCE_FINAL.md).
+
 ## Ponto anterior ao refinamento visual final público
 
 - Tag inédita: `backup-nandanails-antes-refinamento-final-20261119` → `e05c3a3632e18add8469ba6aceea163ef1573af6`.
