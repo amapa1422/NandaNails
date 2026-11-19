@@ -1,5 +1,13 @@
 # Recuperação segura com Git
 
+## Ponto anterior à separação pública e administrativa
+
+- Tag inédita: `backup-nandanails-antes-separacao-publico-admin-20261119`.
+- Commit: `6937fea4864847beac583b44af32749162697078`, árvore inicial limpa, já incluindo Dashboard e calendário. Criada em 19/11/2026 antes de editar; escrita Git autorizada pelo ambiente.
+- Consulta: `git show --stat backup-nandanails-antes-separacao-publico-admin-20261119`.
+- Após preservar o trabalho pendente, criar branch inédita: `git switch -c recuperacao-nandanails-antes-separacao-publico-admin backup-nandanails-antes-separacao-publico-admin-20261119`.
+- Recuperar essa base reintroduz o link no rodapé, sem mudança de banco. Não reaplicar migrations ou publicar durante a recuperação. Documentação: [docs/SEPARACAO_PUBLICO_ADMIN_VERCEL.md](../docs/SEPARACAO_PUBLICO_ADMIN_VERCEL.md).
+
 ## Ponto anterior ao Dashboard e calendário
 
 - Tag inédita: `backup-nandanails-antes-dashboard-calendario`.

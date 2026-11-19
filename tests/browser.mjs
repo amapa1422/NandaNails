@@ -103,7 +103,14 @@ try{
  console.log('PASS independent offline courses, prices, durations, WhatsApp messages, Escape/back/close/backdrop, focus trap/return, six widths and hero button rows');
 
  mock=true;await navigate('index.html');await wait('window.NN?.serverToday');
- for(const width of [320,375,390,430,768,1440]){await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);}
+ for(const width of [320,375,390,430,768,1440]){
+  await viewport(width);assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow at ${width}`);
+  assert.equal(await evaluate(`document.querySelectorAll('a[href*="admin"],.admin-link,script[src*="admin"]').length`),0);
+  assert.equal(await evaluate('document.body.textContent.includes("\u00c1rea da Nanda")'),false);
+  assert.equal(await evaluate('document.querySelector("footer").children.length'),2);
+  assert.ok(await evaluate('(()=>{const [brand,copy]=[...document.querySelector("footer").children].map(x=>x.getBoundingClientRect());return brand.left>=0&&copy.right<=innerWidth&&(innerWidth<=650?copy.top>=brand.bottom:Math.abs((brand.top+brand.bottom-copy.top-copy.bottom)/2)<1)})()'),`Footer alignment ${width}`);
+ }
+ console.log('PASS public page without administrative links, footer alignment and six responsive widths');
  for(const [i,service] of catalog.entries()){
   await evaluate(`document.querySelectorAll('#bookingServices button')[${i}].click()`);await wait('document.querySelector(".cal-day.open")');
   await evaluate('document.querySelector(".cal-day.open").click()');await wait('document.querySelector("#timeGrid button")');

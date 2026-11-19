@@ -1,5 +1,13 @@
 # Estado atual — NandaNails
 
+## Separação do site público e painel — 19/11/2026
+
+Removido somente o link Área da Nanda do rodapé de `index.html`, sem mudar CSS ou outros elementos. Não havia outros links administrativos nas páginas públicas ativas. Painel continua em `/admin.html`; Dashboard/calendário e todos os arquivos administrativos, públicos de funcionamento e Supabase preservados. Base inicial limpa `6937fea4864847beac583b44af32749162697078`; tag inédita `backup-nandanails-antes-separacao-publico-admin-20261119`.
+
+Aprovados: check, 23 testes Node, browser público com rodapé/links em seis larguras, suíte Dashboard, build, testes PostgreSQL locais `admin_action.py` (5 grupos) e `security.py` (5 grupos). RLS, is_admin e admin_action bloqueiam não autorizados nos bancos descartáveis. Corrigida somente fixture de atendimento concluído na suíte Dashboard para permitir execução pela manhã; nenhum código do painel mudou. Comparação HTML com a base, normalizando finais de linha do Git, confirma só a remoção do link. `dist/` local regenerado.
+
+Guia da separação, segurança, limites e configuração futura: [docs/SEPARACAO_PUBLICO_ADMIN_VERCEL.md](../docs/SEPARACAO_PUBLICO_ADMIN_VERCEL.md). Sem impedimento estrutural identificado para Vercel; domínio definitivo, CORS/ALLOWED_ORIGINS e URLs Auth exigem conferência manual futura autorizada. Login/reservas reais e estado remoto não foram testados. Sem consulta ao Supabase remoto, SQL remoto, alteração de secrets, push ou publicação. Migrations intactas, sem backend novo ou CAPTCHA.
+
 ## Dashboard e calendário aprovados — 18/11/2026
 
 Implementados localmente no admin oficial: sidebar Dashboard/Minha agenda, menu recolhível, KPIs e contadores, barras e rosca de paths independentes, serviços mais procurados/últimos agendamentos, resumo semanal, Dia/Semana/Mês, busca/status, WhatsApp real normalizado e detalhes laterais com ações existentes. Base visual preservada em `REFERENCIAS/NandaNails_dashboard_graficos_hover_completo.html`; dados vêm exclusivamente de admin_action após Auth/is_admin. Sem números demonstrativos em produção. Faturamento é estimativa dos concluídos, sem afirmar pagamento recebido.

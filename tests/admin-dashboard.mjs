@@ -69,7 +69,8 @@ try{
  assert.equal(await evaluate('document.querySelectorAll(".donut-arc").length'),0);
  assert.ok(!(await evaluate('document.getElementById("dashboardLegend").textContent')).includes('NaN'));
  console.log('PASS authorization gate, empty dashboard and zero segments');
- records=[record('one'),record('two','completed',today,'16:00'),record('three','cancelled',today,'17:00','invalid'),record('four','confirmed',today,'18:00')];
+ // Keep the completed fixture in the past even when QA runs before 16:00.
+ records=[record('one'),record('two','completed',today,'00:00'),record('three','cancelled',today,'17:00','invalid'),record('four','confirmed',today,'18:00')];
  await refresh();await wait('document.getElementById("dashTotal").textContent==="4"');
  assert.equal(await evaluate('document.getElementById("dashCompleted").textContent'),'1');
  await wait('document.getElementById("dashRevenue").textContent.includes("70,00")');
