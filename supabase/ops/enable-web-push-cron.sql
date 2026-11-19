@@ -1,4 +1,4 @@
--- MANUAL, after explicit remote authorization. Enable Cron/pg_net in Dashboard first.
+supabase/ops/enable-web-push-cron.sql-- MANUAL, after explicit remote authorization. Enable Cron/pg_net in Dashboard first.
 -- Create nn_push_worker_url and nn_push_worker_secret in Vault UI, never in this file.
 do $$
 begin
