@@ -1,5 +1,14 @@
 # Recuperação segura com Git
 
+## Ponto anterior ao Web Push administrativo
+
+- Tag inédita: `backup-nandanails-antes-web-push-20261119`.
+- Commit: `039362c0d992d7f1a3030be2a5bae7fd09d0e4e4`, árvore inicial limpa, incluindo separação pública, Dashboard e calendário. Criada antes de editar em 19/11/2026, com autorização do ambiente para a escrita Git.
+- Consulta: `git show --stat backup-nandanails-antes-web-push-20261119`.
+- Preservar primeiro as alterações pendentes e criar branch inédita: `git switch -c recuperacao-nandanails-antes-web-push backup-nandanails-antes-web-push-20261119`.
+- Nenhum SQL Push foi aplicado remotamente nesta entrega. Se vier a ser aplicado depois, recuperar Git não reverte banco: desativar primeiro Cron `nn-web-push` e funções, revisar o rollback específico `supabase/rollback/202611190005_admin_web_push.sql`, com autorização remota separada. A reversão remove inscrições/histórico Push, preservando reservas/clientes e todo o histórico 001–004. Não executar rollback durante recuperação somente local.
+- Service Worker instalado no aparelho não é removido por trocar Git. A reversão exige cancelar inscrição/remover o PWA ou ação específica no dispositivo, sem limpar outros workers/caches da origem. Guia: [docs/WEB_PUSH_IPHONE.md](../docs/WEB_PUSH_IPHONE.md).
+
 ## Ponto anterior à separação pública e administrativa
 
 - Tag inédita: `backup-nandanails-antes-separacao-publico-admin-20261119`.

@@ -1,5 +1,17 @@
 # Estado atual — NandaNails
 
+## Web Push administrativo para iPhone — 19/11/2026
+
+Implementação somente local, agora com hospedagem futura mantida no **GitHub Pages** (`https://amapa1422.github.io/NandaNails/`), sem Vercel. O guia anterior de Vercel permanece histórico. PWA administrativo inicia em `/NandaNails/admin.html`, com manifesto próprio, ícones NandaNails existentes e Service Worker sem fetch/cache/dados sensíveis. Novo cartão no Dashboard permite ativar/desativar, verificar status e enviar Push de teste; iPhone recebe instruções para Tela de Início. Sessão autorizada integra token em memória e abertura da agenda no clique, preservando Auth/is_admin e funções existentes.
+
+Nova migration incremental **005**, ainda não aplicada remotamente, adiciona inscrições privadas por administradora e fila transacional por dispositivo/reserva. Trigger após INSERT confirmado, isolado de falhas, sem alterar booking/agenda_book ou WhatsApp; worker servidor acionado por Cron, sem polling no frontend. Gestão via `push-admin` (getUser + is_admin + RPC com guarda); despacho por `push-worker` com secret dedicado. Claim concorrente, deduplicação, cota de testes, remoção 404/410 e resultado incerto sem reenvio automático. O aviso é genérico e abre a agenda protegida, sem dados da cliente.
+
+Guia completo de arquivos, arquitetura/limites, secrets, SQL, deploy manual, Cron/Vault, GitHub Pages, instalação iPhone e recuperação: [docs/WEB_PUSH_IPHONE.md](../docs/WEB_PUSH_IPHONE.md). Rollback preparado fora de migrations. Base inicial limpa `039362c0d992d7f1a3030be2a5bae7fd09d0e4e4`; tag inédita `backup-nandanails-antes-web-push-20261119`. Trabalho fica local, sem commit de implementação/push.
+
+Validações locais: 41 testes Node; PostgreSQL Push (6 grupos) e segurança (5); browser público/Dashboard e nova suíte Push em seis larguras; Service Worker real no caminho `/NandaNails/` em localhost, com permissão/Push/Auth simulados; Deno check das duas funções e criptografia/decriptação VAPID/AES128GCM real sem rede; check/build/diff check. Site público, estilos/módulos Dashboard/calendário, assets, config pública, funções booking/notify e migrations 001–004 sem diff. `dist/` regenerado com PWA e somente arquivos públicos.
+
+**Ainda não ativo online.** Nenhuma consulta/alteração no projeto Supabase, migration remota, secret real, cron, deploy, envio Push/WhatsApp, publicação ou push executado. Runtime e dependências públicas foram baixados para validação local. Instalação/recebimento em iPhone físico, app fechado no iOS, Auth/worker/Cron hospedados e entrega aos provedores não testados. Ativação real exige execução manual autorizada da 005, secrets, duas funções, Cron/Vault, frontend Pages e homologação física. Aceitação pelo provedor não comprova recebimento; resultados ambíguos podem perder avisos em favor de evitar reenvio cego.
+
 ## Separação do site público e painel — 19/11/2026
 
 Removido somente o link Área da Nanda do rodapé de `index.html`, sem mudar CSS ou outros elementos. Não havia outros links administrativos nas páginas públicas ativas. Painel continua em `/admin.html`; Dashboard/calendário e todos os arquivos administrativos, públicos de funcionamento e Supabase preservados. Base inicial limpa `6937fea4864847beac583b44af32749162697078`; tag inédita `backup-nandanails-antes-separacao-publico-admin-20261119`.

@@ -5,3 +5,10 @@ verify_jwt = false
 
 [functions.notify]
 verify_jwt = false
+
+# Auth validated with getUser + is_admin inside push-admin; worker uses dedicated secret.
+[functions.push-admin]
+verify_jwt = false
+
+[functions.push-worker]
+verify_jwt = false

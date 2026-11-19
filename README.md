@@ -107,3 +107,5 @@ Ative backups automáticos do projeto e PITR quando disponível no plano. Antes 
 
 
 Dashboard e calendário administrativos aprovados: [implementação, testes e publicação manual](docs/DASHBOARD_CALENDARIO.md).
+
+Web Push administrativo para iPhone (preparação local, GitHub Pages): [arquitetura, SQL incremental, secrets, ativação manual e instalação](docs/WEB_PUSH_IPHONE.md). Ainda depende de ativação autorizada no Supabase e teste em aparelho físico; nenhum deploy ou Push real foi executado nesta entrega.

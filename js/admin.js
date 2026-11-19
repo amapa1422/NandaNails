@@ -24,14 +24,14 @@
   }finally{clearTimeout(timeout);}
  }
  const rpc=(action,data={})=>authorized?http('/rest/v1/rpc/admin_action',{p_action:action,p_data:data}):Promise.reject(new Error('Usuária sem autorização administrativa.'));
- function setSession(s){token=s.access_token;refreshToken=s.refresh_token;clearTimeout(timer);timer=setTimeout(async()=>{try{setSession(await http('/auth/v1/token?grant_type=refresh_token',{refresh_token:refreshToken},''));}catch{logout();notice('Sua sessão expirou. Entre novamente.');}},Math.max(10000,(s.expires_in-60)*1000));}
- function logout(){authorized=false;managementSignature='';lastSlotKey='';const old=token;token='';refreshToken='';clearTimeout(timer);loading++;cache=null;readsRevision++;reads.clear();pendingReads.clear();ui.reset();$('stats').replaceChildren();$('dashboardSummary').replaceChildren();for(const id of ['serviceForms','hourRows','blockList','slots','detailRows','detailActions'])$(id).replaceChildren();$('detailTitle').textContent='';$('detailBadge').textContent='';$('whatsappMessage').value='';$('whatsappLink').removeAttribute('href');$('detailDialog').close();$('rescheduleDialog').close();$('workspace').hidden=true;$('loginPanel').hidden=false;$('logout').hidden=true;$('password').value='';if(old)http('/auth/v1/logout',{},old).catch(()=>{});}
+ function setSession(s){token=s.access_token;refreshToken=s.refresh_token;if(authorized)window.NNPush?.session(token);clearTimeout(timer);timer=setTimeout(async()=>{try{setSession(await http('/auth/v1/token?grant_type=refresh_token',{refresh_token:refreshToken},''));}catch{logout();notice('Sua sessão expirou. Entre novamente.');}},Math.max(10000,(s.expires_in-60)*1000));}
+ function logout(){window.NNPush?.clear();authorized=false;managementSignature='';lastSlotKey='';const old=token;token='';refreshToken='';clearTimeout(timer);loading++;cache=null;readsRevision++;reads.clear();pendingReads.clear();ui.reset();$('stats').replaceChildren();$('dashboardSummary').replaceChildren();for(const id of ['serviceForms','hourRows','blockList','slots','detailRows','detailActions'])$(id).replaceChildren();$('detailTitle').textContent='';$('detailBadge').textContent='';$('whatsappMessage').value='';$('whatsappLink').removeAttribute('href');$('detailDialog').close();$('rescheduleDialog').close();$('workspace').hidden=true;$('loginPanel').hidden=false;$('logout').hidden=true;$('password').value='';if(old)http('/auth/v1/logout',{},old).catch(()=>{});}
  $('logout').onclick=logout;
  $('loginForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter||$('loginForm').querySelector('[type=submit]');if(b.disabled)return;b.disabled=true;try{
   if(!c.supabaseUrl||!c.publishableKey)throw new Error('Configure o projeto Supabase em js/config.js.');
   setSession(await http('/auth/v1/token?grant_type=password',{email:$('email').value.trim(),password:$('password').value},''));
   if(!await http('/rest/v1/rpc/is_admin',{})){logout();throw new Error('Usuária sem autorização administrativa.');}
-  authorized=true;$('password').value='';$('loginPanel').hidden=true;$('workspace').hidden=false;$('logout').hidden=false;await load();
+  authorized=true;window.NNPush?.start(token);$('password').value='';$('loginPanel').hidden=true;$('workspace').hidden=false;$('logout').hidden=false;await load();window.NNPush?.openAgenda();
  }catch(err){notice(err.message);}finally{b.disabled=false;}};
  const range=()=>ui.range();
  async function read(period){

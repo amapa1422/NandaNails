@@ -9,6 +9,8 @@
     "check": "node scripts/check.mjs",
     "build": "node scripts/package.mjs",
     "test:browser": "node tests/browser.mjs",
-    "test:dashboard": "node tests/admin-dashboard.mjs"
+    "test:dashboard": "node tests/admin-dashboard.mjs",
+    "test:push": "node tests/push-browser.mjs",
+    "test:push:db": "python tests/push.py"
   }
 }

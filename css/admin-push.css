@@ -1,0 +1,11 @@
+.push-settings{margin:20px 0;border-color:#684353}
+.push-settings h2{display:flex;align-items:center;gap:9px}
+.push-settings h2 svg{width:20px;height:20px;stroke:#e0b08c;fill:none;flex:none}
+.push-settings p{color:#e8cbd5;font-size:13px;line-height:1.6}
+.push-settings .push-actions{display:flex;flex-wrap:wrap;gap:10px}
+.push-settings button{min-height:44px;transition:opacity .2s ease,background .2s ease}
+.push-settings button:disabled{opacity:.55;cursor:default}
+.push-settings [hidden]{display:none!important}
+.push-settings ol{padding-left:22px;color:#e8cbd5;font-size:13px;line-height:1.7}
+.push-settings small{display:block;margin-top:14px;color:#c5a9b5;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.push-settings button{transition:none}}
